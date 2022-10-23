@@ -73,6 +73,11 @@ typedef enum ehttpc_parse_state {
   HTTPC_PARSE_RX_DATA
 } httpc_parse_state_t;
 
+typedef enum httpc_method{
+	HTTPC_METHOD_GET = 0,
+	HTTPC_METHOD_POST
+} httpc_method_t;
+
 /**
  * @ingroup httpc 
  * HTTP client result codes
@@ -129,7 +134,9 @@ typedef void (*httpc_result_fn)(void *arg, httpc_result_t httpc_result, u32_t rx
 typedef err_t (*httpc_headers_done_fn)(httpc_state_t *connection, void *arg, struct pbuf *hdr, u16_t hdr_len, u32_t content_len);
 
 typedef struct _httpc_connection {
-	
+	httpc_method_t method;
+	uint8_t (*post_body)[]; //指向一个数组
+	uint32_t body_len;
 #if LWIP_ALTCP
   altcp_allocator_t *altcp_allocator;
 #endif
@@ -163,9 +170,9 @@ typedef struct _httpc_state
 #endif
 } httpc_state_t;
 
-err_t httpc_get_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
+err_t httpc_request_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
                      altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection);
-err_t httpc_get_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
+err_t httpc_request_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
                      altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection);
 
 

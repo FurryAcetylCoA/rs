@@ -50,6 +50,7 @@ UART_HandleTypeDef huart1;
 
 int fputc(int ch,FILE *f)
 {
+		UNUSED(f);
     HAL_UART_Transmit(&huart1,(uint8_t *)&ch,1,0xfff);        //UartHandle是串口的句柄
 	return ch;
 }
@@ -68,10 +69,12 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void httpc_result_fn_impl(void *arg, httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err){
-	//请求产生，服务器能看到 但是不call回调
-	httpc_state_t    *phttpc_state = (httpc_state_t*)arg;
+	LWIP_UNUSED_ARG(arg);
+	LWIP_UNUSED_ARG(httpc_result);
+	LWIP_UNUSED_ARG(rx_content_len);
+	LWIP_UNUSED_ARG(srv_res);
+	LWIP_UNUSED_ARG(err);
 	printf("httpc_result_fn_impl \n");
-	mem_free(phttpc_state);
 }
 
 
@@ -113,12 +116,16 @@ int main(void)
 
 	//tcp_echoserver_init();
 	printf("begin to init\n");
-	httpc_connection_t httpc_settings= { httpc_result_fn_impl, NULL };
+	httpc_connection_t httpc_settings= { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
 	httpc_state_t    * phttpc_state = NULL;
 	ip4_addr_t addr;
 	IP4_ADDR(&addr,192,168,3,3);
 	uint32_t InitTime= HAL_GetTick();
 	uint32_t Sent = 0;
+	uint8_t PostBuf[128];
+	httpc_settings.body_len=snprintf((char*)PostBuf,128,"{\"datastreams\": [{\"id\": \"temperature\",\"datapoints\": [{\"value\": \"27\"}]}]}");
+	httpc_settings.method = HTTPC_METHOD_POST;
+	httpc_settings.post_body=&(PostBuf);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -127,8 +134,8 @@ int main(void)
   {
 		MX_LWIP_Process();
 		
-		if(HAL_GetTick()-InitTime>5000 && Sent ==0){
-			httpc_get_file(&addr,80,"/index2.html",&httpc_settings,NULL,phttpc_state,&phttpc_state);
+		if(HAL_GetTick()-InitTime>2000 && Sent ==0){
+			httpc_request_file(&addr,80,"/file.php",&httpc_settings,NULL,phttpc_state,&phttpc_state);
 			Sent=1;
 		}
 		

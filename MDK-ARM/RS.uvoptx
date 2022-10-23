@@ -157,9 +157,41 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
+          <LineNumber>135</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134232020</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\App\http_client.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\RS\../App/http_client.c\135</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>482</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134231804</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\App\http_client.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\RS\../App/http_client.c\482</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
           <LineNumber>220</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>28</Address>
+          <Address>24</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -171,7 +203,23 @@
           <Expression>\\RS\../Drivers/BSP/Components/lan8742/lan8742.c\220</Expression>
         </Bp>
         <Bp>
-          <Number>1</Number>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>570</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>..\App\http_client.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
           <Type>0</Type>
           <LineNumber>72</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -187,7 +235,7 @@
           <Expression></Expression>
         </Bp>
         <Bp>
-          <Number>2</Number>
+          <Number>5</Number>
           <Type>0</Type>
           <LineNumber>77</LineNumber>
           <EnabledFlag>1</EnabledFlag>
@@ -207,39 +255,19 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>es</ItemText>
+          <ItemText>req</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>p</ItemText>
-        </Ww>
-        <Ww>
-          <count>2</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>tpcb</ItemText>
-        </Ww>
-        <Ww>
-          <count>3</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>plen</ItemText>
-        </Ww>
-        <Ww>
-          <count>4</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>tcp_echoserver_pcb</ItemText>
-        </Ww>
-        <Ww>
-          <count>5</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>newpcb</ItemText>
+          <ItemText>buffer</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
-          <SubType>0</SubType>
-          <ItemText>0x20006AEA</ItemText>
+          <SubType>8</SubType>
+          <ItemText>0x200081D0</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

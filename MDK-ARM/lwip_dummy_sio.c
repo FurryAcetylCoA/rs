@@ -18,7 +18,7 @@
 sio_fd_t sio_open(u8_t devnum)
 {
   sio_fd_t sd;
-
+	LWIP_UNUSED_ARG(devnum);
   sd = 0; // dummy code
 
 
@@ -35,7 +35,8 @@ sio_fd_t sio_open(u8_t devnum)
  */
 void sio_send(u8_t c, sio_fd_t fd)
 {
-
+		LWIP_UNUSED_ARG(c);
+	  LWIP_UNUSED_ARG(fd);
 }
 
 /**
@@ -51,12 +52,11 @@ void sio_send(u8_t c, sio_fd_t fd)
  */
 u32_t sio_read(sio_fd_t fd, u8_t *data, u32_t len)
 {
-  u32_t recved_bytes;
+	LWIP_UNUSED_ARG(fd);
+	LWIP_UNUSED_ARG(data);
+	LWIP_UNUSED_ARG(len);	
 
-
-  recved_bytes = 0; // dummy code
-
-  return recved_bytes;
+  return 0;
 }
 
 /**
@@ -70,10 +70,10 @@ u32_t sio_read(sio_fd_t fd, u8_t *data, u32_t len)
  */
 u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len)
 {
-  u32_t recved_bytes;
+	
+	LWIP_UNUSED_ARG(fd);
+	LWIP_UNUSED_ARG(data);
+	LWIP_UNUSED_ARG(len);	
 
-
-  recved_bytes = 0; // dummy code
-
-  return recved_bytes;
+  return 0;
 }

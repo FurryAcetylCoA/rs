@@ -90,27 +90,44 @@
 #define HTTPC_CONTENT_LEN_INVALID 0xFFFFFFFF
 
 /* GET request basic */
-#define HTTPC_REQ_11 "GET %s HTTP/1.1\r\n" /* URI */\
+#define HTTPC_REQ_11_GET "GET %s HTTP/1.1\r\n" /* URI */\
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
-    "Connection: Close\r\n" /* we don't support persistent connections, yet */ \
+    "Connection: Close\r\n" /* we don't support persistent connections */ \
     "\r\n"
-#define HTTPC_REQ_11_FORMAT(uri) HTTPC_REQ_11, uri, HTTPC_CLIENT_AGENT
+#define HTTPC_REQ_11_FORMAT_GET(uri) HTTPC_REQ_11_GET, uri, HTTPC_CLIENT_AGENT
 
 /* GET request with host */
-#define HTTPC_REQ_11_HOST "GET %s HTTP/1.1\r\n" /* URI */\
+#define HTTPC_REQ_11_GET_HOST "GET %s HTTP/1.1\r\n" /* URI */\
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
     "Host: %s\r\n" /* server name */ \
-    "Connection: Close\r\n" /* we don't support persistent connections, yet */ \
+    "Connection: Close\r\n" /* we don't support persistent connections */ \
     "\r\n"
-#define HTTPC_REQ_11_HOST_FORMAT(uri, srv_name) HTTPC_REQ_11_HOST, uri, HTTPC_CLIENT_AGENT, srv_name
+#define HTTPC_REQ_11_HOST_FORMAT_GET(uri, srv_name) HTTPC_REQ_11_GET_HOST, uri, HTTPC_CLIENT_AGENT, srv_name
 
-/* GET request with proxy */
-//REMOVED
+//POST 请求BODY最后没有CRLF
+/* POST request basic */
+#define HTTPC_REQ_11_POST "POST %s HTTP/1.1\r\n" /* URI */\
+    "User-Agent: %s\r\n" /* User-Agent */ \
+    "Accept: */*\r\n" \
+		"Content-Length: %d\r\n" /*我也不知道为啥 但是len必须加一*/\
+		"Connection: Close\r\n" /* we don't support persistent connections */ \
+    "\r\n" \
+		"%s"
+#define HTTPC_REQ_11_FORMAT_POST(uri, body, len) HTTPC_REQ_11_POST, uri, HTTPC_CLIENT_AGENT, len+1, body
 
-/* GET request with proxy (non-default server port) */
-//REMOVED
+/* POST request with host */
+#define HTTPC_REQ_11_POST_HOST "POST %s HTTP/1.1\r\n" /* URI */\
+    "User-Agent: %s\r\n" /* User-Agent */ \
+    "Accept: */*\r\n" \
+    "Host: %s\r\n" /* server name */ \
+		"Content-Length: %d\r\n"\
+		"Connection: Close\r\n" /* we don't support persistent connectionsb*/ \
+    "\r\n " \
+		"%s"
+#define HTTPC_REQ_11_HOST_FORMAT_POST(uri, srv_name, body, len) HTTPC_REQ_11_POST_HOST, uri, HTTPC_CLIENT_AGENT, srv_name, len+1, body
+
 
 /** Free http client state and deallocate all resources within */
 static err_t
@@ -460,15 +477,25 @@ httpc_get_internal_dns(httpc_state_t* req, const char* server_name)
 }
 
 static int
-httpc_create_request_string(const httpc_connection_t *settings, const char* server_name, int server_port, const char* uri,
+httpc_create_request_string(const httpc_connection_t *settings, const char* server_name, const char* uri,
                             int use_host, char *buffer, size_t buffer_size)
 {
-  if (use_host) {
-    LWIP_ASSERT("server_name != NULL", server_name != NULL);
-    return snprintf(buffer, buffer_size, HTTPC_REQ_11_HOST_FORMAT(uri, server_name));
-  } else {
-    return snprintf(buffer, buffer_size, HTTPC_REQ_11_FORMAT(uri));
-  }
+	if(settings->method == HTTPC_METHOD_GET){
+		if (use_host) {
+			LWIP_ASSERT("server_name != NULL", server_name != NULL);
+			return snprintf(buffer, buffer_size, HTTPC_REQ_11_HOST_FORMAT_GET(uri, server_name));
+		} else {
+			return snprintf(buffer, buffer_size, HTTPC_REQ_11_FORMAT_GET(uri));
+		}
+	}else{
+			LWIP_ASSERT("*post_body != NULL", *(settings->post_body) != NULL);
+		if (use_host) {
+			LWIP_ASSERT("server_name != NULL", server_name != NULL);
+			return snprintf(buffer, buffer_size, HTTPC_REQ_11_HOST_FORMAT_POST(uri, server_name, *(settings->post_body),settings->body_len));
+		} else {
+			return snprintf(buffer, buffer_size, HTTPC_REQ_11_FORMAT_POST(uri, *(settings->post_body),settings->body_len));
+		}
+	}
 }
 
 /** Initialize the connection struct */
@@ -487,7 +514,7 @@ httpc_init_connection_common(httpc_state_t **connection, const httpc_connection_
   LWIP_ASSERT("uri != NULL", uri != NULL);
 
   /* get request len */
-  req_len = httpc_create_request_string(settings, server_name, server_port, uri, use_host, NULL, 0); //这里只是计算HTTP首部长度，并不真的生成
+  req_len = httpc_create_request_string(settings, server_name, uri, use_host, NULL, 0); //这里只是计算HTTP长度，并不真的生成
   //因为要用这个长度来先生成PBUF
   if ((req_len < 0) || (req_len > 0xFFFF)) {
     return ERR_VAL;
@@ -542,7 +569,7 @@ httpc_init_connection_common(httpc_state_t **connection, const httpc_connection_
   altcp_sent(req->pcb, httpc_tcp_sent);
 
   /* set up request buffer */
-  req_len2 = httpc_create_request_string(settings, server_name, server_port, uri, use_host,
+  req_len2 = httpc_create_request_string(settings, server_name, uri, use_host,
     (char *)req->request->payload, req_len + 1);//这里才是真正的首部生成  //那这个函数要修改一下，因为它不支持body
   if (req_len2 != req_len) {
     httpc_free_state(req);
@@ -586,11 +613,11 @@ httpc_init_connection_addr(httpc_state_t **connection, const httpc_connection_t 
 
 /**
  * @ingroup httpc 
- * HTTP client API: get a file by passing server IP address
+ * HTTP client API: request a file by passing server IP address
  *
  * @param server_addr IP address of the server to connect
  * @param port tcp port of the server
- * @param uri uri to get from the server, remember leading "/"!
+ * @param uri uri to post to the server, remember leading "/"!
  * @param settings connection settings (callbacks, etc.)
  * @param recv_fn the http body (not the headers) are passed to this callback
  * @param callback_arg argument passed to all the callbacks
@@ -599,13 +626,12 @@ httpc_init_connection_addr(httpc_state_t **connection, const httpc_connection_t 
  *         or an error code
  */
 err_t
-httpc_get_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
+httpc_request_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
                altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection)
 {
   err_t err;
   httpc_state_t* req;
 
-  //LWIP_ERROR("invalid parameters", (server_addr != NULL) && (uri != NULL) && (recv_fn != NULL), return ERR_ARG;);
   LWIP_ERROR("invalid parameters", (server_addr != NULL) && (uri != NULL), return ERR_ARG;);
   err = httpc_init_connection_addr(&req, settings, server_addr, port,
     uri, recv_fn, callback_arg);
@@ -628,7 +654,7 @@ httpc_get_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const 
 
 /**
  * @ingroup httpc 
- * HTTP client API: get a file by passing server name as string (DNS name or IP address string)
+ * HTTP client API: request a file by passing server name as string (DNS name or IP address string)
  *
  * @param server_name server name as string (DNS name or IP address string)
  * @param port tcp port of the server
@@ -641,13 +667,12 @@ httpc_get_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const 
  *         or an error code
  */
 err_t
-httpc_get_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
+httpc_request_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
                    altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection)
 {
   err_t err;
   httpc_state_t* req;
 
-  //LWIP_ERROR("invalid parameters", (server_name != NULL) && (uri != NULL) && (recv_fn != NULL), return ERR_ARG;);
   LWIP_ERROR("invalid parameters", (server_name != NULL) && (uri != NULL), return ERR_ARG;);
   err = httpc_init_connection(&req, settings, server_name, port, uri, recv_fn, callback_arg);
   if (err != ERR_OK) {
