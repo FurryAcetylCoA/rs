@@ -570,7 +570,7 @@ httpc_init_connection_common(httpc_state_t **connection, const httpc_connection_
 
   /* set up request buffer */
   req_len2 = httpc_create_request_string(settings, server_name, uri, use_host,
-    (char *)req->request->payload, req_len + 1);//这里才是真正的首部生成  //那这个函数要修改一下，因为它不支持body
+    (char *)req->request->payload, req_len + 1);//这里才是真正的首部生成  
   if (req_len2 != req_len) {
     httpc_free_state(req);
     return ERR_VAL;
