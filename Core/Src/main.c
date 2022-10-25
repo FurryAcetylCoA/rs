@@ -18,15 +18,15 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "lwip.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "lwip.h"
 //#include "tcp_echo.h"
 //#include "tcp_client.h"
 #include "http_client.h"
 #include "eeprom.h"
-#include "lcd.h"
+#include "lcd_gxct.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -122,12 +122,11 @@ int main(void)
   MX_GPIO_Init();
   MX_CRC_Init();
   MX_USART1_UART_Init();
-  MX_LWIP_Init();
   MX_I2C1_Init();
   MX_FSMC_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-
+	
 	//tcp_echoserver_init();
 	printf("good "__TIME__"\n");
 	
@@ -150,16 +149,18 @@ int main(void)
 	httpc_settings.post_body=&(PostBuf);
 	*/
 
-	LCD_Init(); 
-	uint8_t  lcd_id[12];
-	sprintf((char*)lcd_id,"LCD ID:%04X",lcddev.id);
-	POINT_COLOR=RED;
-	LCD_Clear(BLACK);
-	LCD_Display_Dir(1);
-	BACK_COLOR=BLACK;
-	LCD_ShowString(30,40,290,24,24,(uint8_t*)"Explssssssssssorer STM32F4");
-	LCD_ShowString(30,110,200,16,16,lcd_id);	
-
+	LCD_Init(GRAYBLUE); 
+	uint8_t  lcd_id[24];
+	sprintf((char*)lcd_id,"Initialing...");
+	//POINT_COLOR=RED;
+	
+	LCD_ShowStringLine(LINE3,lcd_id);
+	BACK_COLOR=BLUE;
+	LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
+	BACK_COLOR=GRAYBLUE;
+	sprintf((char*)lcd_id,"Initialing... done");
+	MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
+	LCD_ShowStringLine(LINE3,lcd_id);
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -550,6 +550,16 @@
               <FileType>1</FileType>
               <FilePath>..\App\Driver\lcd.c</FilePath>
             </File>
+            <File>
+              <FileName>lcd_gxct.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App\Driver\lcd_gxct.c</FilePath>
+            </File>
+            <File>
+              <FileName>lcd_gxct.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\App\Driver\lcd_gxct.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
