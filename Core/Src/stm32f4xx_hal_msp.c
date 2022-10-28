@@ -150,8 +150,8 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
     /* Peripheral clock enable */
     __HAL_RCC_I2C1_CLK_ENABLE();
   /* USER CODE BEGIN I2C1_MspInit 1 */
-	// hi2c->Instance->CR1= I2C_CR1_SWRST;
-	// hi2c->Instance->CR1= 0;
+    __I2C1_FORCE_RESET();
+    __I2C1_RELEASE_RESET();
   /* USER CODE END I2C1_MspInit 1 */
   }
 

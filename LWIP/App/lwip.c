@@ -36,6 +36,9 @@ static void Ethernet_Link_Periodic_Handle(struct netif *netif);
 /* ETH Variables initialization ----------------------------------------------*/
 void Error_Handler(void);
 
+/* DHCP Variables initialization ---------------------------------------------*/
+uint32_t DHCPfineTimer = 0;
+uint32_t DHCPcoarseTimer = 0;
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
@@ -46,9 +49,6 @@ struct netif gnetif;
 ip4_addr_t ipaddr;
 ip4_addr_t netmask;
 ip4_addr_t gw;
-uint8_t IP_ADDRESS[4];
-uint8_t NETMASK_ADDRESS[4];
-uint8_t GATEWAY_ADDRESS[4];
 
 /* USER CODE BEGIN 2 */
 
@@ -59,30 +59,13 @@ uint8_t GATEWAY_ADDRESS[4];
   */
 void MX_LWIP_Init(void)
 {
-  /* IP addresses initialization */
-  IP_ADDRESS[0] = 192;
-  IP_ADDRESS[1] = 168;
-  IP_ADDRESS[2] = 3;
-  IP_ADDRESS[3] = 5;
-  NETMASK_ADDRESS[0] = 255;
-  NETMASK_ADDRESS[1] = 255;
-  NETMASK_ADDRESS[2] = 255;
-  NETMASK_ADDRESS[3] = 0;
-  GATEWAY_ADDRESS[0] = 192;
-  GATEWAY_ADDRESS[1] = 168;
-  GATEWAY_ADDRESS[2] = 3;
-  GATEWAY_ADDRESS[3] = 1;
-
-/* USER CODE BEGIN IP_ADDRESSES */
-/* USER CODE END IP_ADDRESSES */
-
   /* Initilialize the LwIP stack without RTOS */
   lwip_init();
 
-  /* IP addresses initialization without DHCP (IPv4) */
-  IP4_ADDR(&ipaddr, IP_ADDRESS[0], IP_ADDRESS[1], IP_ADDRESS[2], IP_ADDRESS[3]);
-  IP4_ADDR(&netmask, NETMASK_ADDRESS[0], NETMASK_ADDRESS[1] , NETMASK_ADDRESS[2], NETMASK_ADDRESS[3]);
-  IP4_ADDR(&gw, GATEWAY_ADDRESS[0], GATEWAY_ADDRESS[1], GATEWAY_ADDRESS[2], GATEWAY_ADDRESS[3]);
+  /* IP addresses initialization with DHCP (IPv4) */
+  ipaddr.addr = 0;
+  netmask.addr = 0;
+  gw.addr = 0;
 
   /* add the network interface (IPv4/IPv6) without RTOS */
   netif_add(&gnetif, &ipaddr, &netmask, &gw, NULL, &ethernetif_init, &ethernet_input);
@@ -105,6 +88,9 @@ void MX_LWIP_Init(void)
   netif_set_link_callback(&gnetif, ethernet_link_status_updated);
 
   /* Create the Ethernet link handler thread */
+
+  /* Start DHCP negotiation for a network interface (IPv4) */
+  dhcp_start(&gnetif);
 
 /* USER CODE BEGIN 3 */
 

@@ -42,11 +42,17 @@ extern TIM_HandleTypeDef htim4;
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern uint8_t errflag[64];
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define X_Debug_Tools
+#ifdef X_Debug_Tools
+#define _TRAP __BKPT(0)
+#else
+#define _TRAP errflag=__FILE__ __LINE__ '\0'
+#endif
 
 /* USER CODE END EM */
 

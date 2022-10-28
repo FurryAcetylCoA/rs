@@ -157,7 +157,23 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>155</LineNumber>
+          <LineNumber>178</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134248184</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>../Core/Src/main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\RS\../Core/Src/main.c\178</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>179</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -169,22 +185,6 @@
           <Filename>../Core/Src/main.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>220</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>28</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../Drivers/BSP/Components/lan8742/lan8742.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\RS\../Drivers/BSP/Components/lan8742/lan8742.c\220</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -212,6 +212,16 @@
           <count>4</count>
           <WinNumber>1</WinNumber>
           <ItemText>ss</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>netif_default</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>dhcp</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -1760,7 +1770,7 @@
 
   <Group>
     <GroupName>Drivers/BSP/Components</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

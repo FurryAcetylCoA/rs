@@ -25,7 +25,7 @@
 //#include "tcp_echo.h"
 //#include "tcp_client.h"
 #include "http_client.h"
-#include "eeprom.h"
+#include "App.h"
 #include "lcd_gxct.h"
 /* USER CODE END Includes */
 
@@ -56,12 +56,7 @@ SRAM_HandleTypeDef hsram1;
 
 /* USER CODE BEGIN PV */
 
-int fputc(int ch,FILE *f)
-{
-		UNUSED(f);
-    HAL_UART_Transmit(&huart1,(uint8_t *)&ch,1,0xfff);        //UartHandle是串口的句柄
-	return ch;
-}
+uint8_t errstring[64];
 
 /* USER CODE END PV */
 
@@ -87,7 +82,12 @@ void httpc_result_fn_impl(void *arg, httpc_result_t httpc_result, u32_t rx_conte
 	LWIP_UNUSED_ARG(err);
 	printf("httpc_result_fn_impl \n");
 }
-
+int fputc(int ch,FILE *f)
+{
+    UNUSED(f);
+    HAL_UART_Transmit(&huart1,(uint8_t *)&ch,1,0xfff);        //UartHandle是串口的句柄
+    return ch;
+}
 
 
 /* USER CODE END 0 */
@@ -129,7 +129,7 @@ int main(void)
 	
 	//tcp_echoserver_init();
 	printf("good "__TIME__"\n");
-	
+    App_test_LD_STORE();
 	int ret =0;
 	//ret = EE_init();
 	//printf("%d\n",ret);
@@ -148,19 +148,23 @@ int main(void)
 	httpc_settings.method = HTTPC_METHOD_POST;
 	httpc_settings.post_body=&(PostBuf);
 	*/
-
-	LCD_Init(GRAYBLUE); 
+	uint32_t Sent = 0;
+	uint32_t InitTime= HAL_GetTick() ;
+	LCD_Init(GRAYBLUE);
 	uint8_t  lcd_id[24];
 	sprintf((char*)lcd_id,"Initialing...");
+    LCD_ShowStringLine(LINE1,"hello Clion!222");
 	//POINT_COLOR=RED;
-	
+
 	LCD_ShowStringLine(LINE3,lcd_id);
 	BACK_COLOR=BLUE;
-	LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
+	LCD_ShowStringLine(LINE10,(uint8_t*)"               Build:"__TIME__);
 	BACK_COLOR=GRAYBLUE;
 	sprintf((char*)lcd_id,"Initialing... done");
 	MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
 	LCD_ShowStringLine(LINE3,lcd_id);
+	struct dhcp *dhcp = netif_dhcp_data(netif_default);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -168,11 +172,16 @@ int main(void)
   while (1)
   {
 		MX_LWIP_Process();
-		
-		/*if(HAL_GetTick()-InitTime>2000 && Sent ==0){
-			httpc_request_file(&addr,80,"/file.php",&httpc_settings,NULL,phttpc_state,&phttpc_state);
+		//目前选择的dhcp失败标记：4秒后state仍为0x06或
+		//正统方法：tries大于6
+		if(HAL_GetTick()-InitTime>8000 && Sent ==0){
+			sprintf((char*)lcd_id,"%s",ip4addr_ntoa(&(dhcp->offered_ip_addr)));
+			LCD_ShowStringLine(LINE4,lcd_id);
+			sprintf((char*)lcd_id,"%s",ip4addr_ntoa(&(dhcp->offered_gw_addr)));
+			LCD_ShowStringLine(LINE5,lcd_id);
+			//httpc_request_file(&addr,80,"/file.php",&httpc_settings,NULL,phttpc_state,&phttpc_state);
 			Sent=1;
-		}*/
+		}
 		
     /* USER CODE END WHILE */
 
@@ -268,7 +277,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 10*1000;
+  hi2c1.Init.ClockSpeed = 1*1000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
