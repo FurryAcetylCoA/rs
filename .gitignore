@@ -1,5 +1,6 @@
-# git ignore file for Keil µVision Project
-
+cmake-build-debug/
+cmake-build-release-mingw/
+.idea/
 # µVision 5 and µVision 4 Project screen layout file
 *.uvguix.*
 *.uvgui.*

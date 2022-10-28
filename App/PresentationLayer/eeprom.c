@@ -88,7 +88,7 @@ HAL_StatusTypeDef EE_Store(App_info *appInfo){
     if(EE_checked != 1){
         HAL_StatusTypeDef ret;
         ret = EE_init();
-        if(ret != EE_success){
+        if(ret != HAL_OK){
             EE_checked = 3;
             _TRAP;
             return ret;

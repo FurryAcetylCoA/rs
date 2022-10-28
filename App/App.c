@@ -37,9 +37,8 @@ void App_test_LD_STORE(){
     e = EE_Store(&This);
     App_info This2; //应该解决了
     //sizeof "This" is 524
-    if(e!=EE_success){
-        __BKPT(0);
-        printf("%d",e);
+    if(e!=HAL_OK){
+        _TRAP;
     }
     memset(&This2,0,sizeof(This2));
     EE_Load(&This2);

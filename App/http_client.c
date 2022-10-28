@@ -37,12 +37,6 @@
 /**
  * @defgroup httpc HTTP client
  * @ingroup apps
- * @todo:
- * - persistent connections
- * - select outgoing http version
- * - optionally follow redirect
- * - check request uri for invalid characters? (e.g. encode spaces)
- * - IPv6 support
  */
 
 #include "http_client.h"
@@ -243,7 +237,7 @@ http_wait_headers(struct pbuf *p, u32_t *content_length, u16_t *total_header_len
   u16_t end1 = pbuf_memfind(p, "\r\n\r\n", 4, 0);//Header带一个CRLF。然后最后的空行又带一个
   if (end1 < (0xFFFF - 2)) {
     /* all headers received */
-    /* check if we have a content length (@todo: case insensitive?) */
+    /* check if we have a content length  */
     u16_t content_len_hdr;
     *content_length = HTTPC_CONTENT_LEN_INVALID;
     *total_header_len = end1 + 4;
