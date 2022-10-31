@@ -6,12 +6,14 @@
 #define RS_TICTOK_H
 
 #include "main.h"
+#include "stdbool.h"
 //滴答中间件，其他组件可以注册它的回调
 //可以很方便地在预计时间后运行某一逻辑
 typedef struct {
     void      (*tick)   (void);
+    void      (*tock)   (void);
     void      (*Remove) (uint32_t);
-    uint32_t  (*Add)    (void(*)(void),uint32_t,_Bool OneShoot);
+    uint32_t  (*Add)    (void(*)(uint32_t),uint32_t,_Bool OneShoot);
     void      (*Init)   (void);
 }TicTok;
 
