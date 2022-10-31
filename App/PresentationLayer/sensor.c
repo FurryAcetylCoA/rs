@@ -14,8 +14,8 @@ typedef __PACKED_STRUCT {
             uint8_t dataAddLo;
             uint8_t dataHi;
             uint8_t dataLo;
-            uint8_t crc16Hi;
             uint8_t crc16Lo;
+            uint8_t crc16Hi;
         }withNoLen;
         __PACKED_STRUCT{
             uint8_t dataLen;  //’‚¡©æÕ≤Ó’‚øÈ
@@ -23,8 +23,8 @@ typedef __PACKED_STRUCT {
             uint8_t dataAddLo;
             uint8_t dataHi;
             uint8_t dataLo;
-            uint8_t crc16Hi;
             uint8_t crc16Lo;
+            uint8_t crc16Hi;
         }withLen;
     };
 }Sens_buffer;
