@@ -22,6 +22,7 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "tictok.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -41,7 +42,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+static uint32_t  t10msCounter,t200msCounter;
+uint32_t  t10ms,t200ms;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -187,7 +189,18 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
+  tictok.tick();
 
+  t10msCounter++;
+  if(t10msCounter>=10){
+      t10msCounter=0;
+      t10ms=1;
+  }
+  t200msCounter++;
+  if(t200msCounter>=200){
+      t200msCounter=0;
+      t200ms=1;
+  }
   /* USER CODE END SysTick_IRQn 1 */
 }
 

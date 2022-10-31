@@ -37,7 +37,7 @@
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern uint32_t  t10ms,t200ms;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
