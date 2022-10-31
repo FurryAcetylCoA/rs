@@ -77,7 +77,7 @@ HAL_StatusTypeDef EE_Load(App_info *appInfo){
         tempFactor                                   = (ERom.devs[i].data_struct & 0b00000011);
         appInfo->devs[i].sens_desc.data2.factor      = miniPow(tempFactor);
     }
-
+    This.config.eeprom_ready = 1;
     return  HAL_OK;
 }
 

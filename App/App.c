@@ -5,7 +5,17 @@
 #include "App.h"
 #include "string.h"
 #include "stdio.h"
-App_info This;
+#include "data.h"
+
+static void App_init();
+static void State_go(States next_state);
+static void State_server(void);
+App_info This={
+        .init     = App_init,
+        .state_go = State_go,
+        .state_server = State_server
+};
+
 void App_test_LD_STORE(){
 
     This.config.dev_count = 3;
@@ -48,7 +58,51 @@ void App_test_LD_STORE(){
     }
     _TRAP;
 }
-void App_init(){
-    EE_Load(&This);
+static void App_init(){
+
 }
 
+/**
+* @brief 状态机的组合逻辑输出（即在某状态时持续发生的操作）
+* 自动转移会写在这里
+* @retval None.
+*/
+static void State_server(){
+    switch (This.state) {
+        case ST_saint_peter:
+            //eeprom读取成功+有设备注册->silver_key
+            if(This.config.eeprom_ready == 1){
+                if(This.config.dev_count != 0 ){
+                    State_go(ST_Silver_Key);
+                }else{
+                    State_go(ST_Golden_Key);
+                }
+            }
+
+    }
+}
+/**
+* @brief 操作This状态机转移状态
+* 一次性操作发生在这里
+* @param next_state: next state
+* @retval None.
+*/
+static void State_go(States next_state){
+    //状态转移
+    switch (next_state) {
+        case ST_Genesis:
+            _TRAP;
+            break;
+        case ST_saint_peter:
+            EE_Load(&This);//读入EEPROM配置
+            This.state=ST_saint_peter;
+            break;
+        case ST_Earth:
+            //填充所有数据，然后注册数据中间件轮询到时钟中心
+
+
+        default:
+            _TRAP;
+
+    }
+}
