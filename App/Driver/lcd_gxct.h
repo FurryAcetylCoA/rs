@@ -19,5 +19,8 @@ typedef enum{
 	LINE10=9
 }LCD_Line;
 
-void LCD_ShowStringLine(LCD_Line line,const uint8_t *p);
+void LCD_ShowStringLine(LCD_Line line, const char *p);
+void LCD_clearLine(LCD_Line line);
+void LCD_push(uint32_t new_background);
+void LCD_pop();
 #endif  //__LCD_GXCT_H__
