@@ -22,11 +22,15 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lwip.h"
+#include "stm32f4xx_it.h"
 //#include "tcp_echo.h"
 //#include "tcp_client.h"
 #include "http_client.h"
 #include "App.h"
 #include "lcd_gxct.h"
+#include "stdio.h"
+#include "string.h"
+#include "tictok.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,7 +44,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
+                  LCD_ShowStringLine(_LINE_,lcd_buffer);}while(0)
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -57,6 +62,7 @@ SRAM_HandleTypeDef hsram1;
 /* USER CODE BEGIN PV */
 
 uint8_t errstring[64];
+static char    lcd_buffer[32];
 
 /* USER CODE END PV */
 
@@ -88,7 +94,22 @@ int fputc(int ch,FILE *f)
     HAL_UART_Transmit(&huart1,(uint8_t *)&ch,1,0xfff);        //UartHandle是串口的句柄
     return ch;
 }
+void check_dhcp_callback(uint32_t ID){
+    struct dhcp *dhcp = netif_dhcp_data(netif_default);
+    if(dhcp->state == 10){ //10:DHCP_STATE_BOUND see prot\dhcp.h
+        LcdPrint(LINE3,"Waiting DHCP...done");
+        LcdPrint(LINE4,"IP:%s",ip4addr_ntoa(&(dhcp->offered_ip_addr)));
+        LcdPrint(LINE5,"GW:%s",ip4addr_ntoa(&(dhcp->offered_gw_addr)));
+        tictok.Remove(ID);
+        This.state_go(ST_saint_peter);
+    }else if(dhcp->tries >=6){
+        LCD_push(RED);
+        LcdPrint(LINE3,"Waiting DHCP...failed");
+        LCD_pop();
+        LcdPrint(LINE4,"keep trying to get DHCP");
 
+    }
+}
 
 /* USER CODE END 0 */
 
@@ -126,44 +147,42 @@ int main(void)
   MX_FSMC_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-	
-	//tcp_echoserver_init();
-	printf("good "__TIME__"\n");
-    App_test_LD_STORE();
-	int ret =0;
-	//ret = EE_init();
-	//printf("%d\n",ret);
-	//HAL_I2C_DeInit(&hi2c1);
-	//HAL_I2C_Init(&hi2c1);
-	/*
-	httpc_connection_t httpc_settings= { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
-	httpc_state_t    * phttpc_state = NULL;
-	ip4_addr_t addr;
-	IP4_ADDR(&addr,192,168,3,3);
-	uint32_t InitTime= HAL_GetTick();
-	uint32_t Sent = 0;
-	uint8_t PostBuf[128];
-	httpc_settings.body_len=snprintf((char*)PostBuf,128,\
-		"{\"datastreams\": [{\"id\": \"temperature\",\"datapoints\": [{\"value\": \"27\"}]}]}");
-	httpc_settings.method = HTTPC_METHOD_POST;
-	httpc_settings.post_body=&(PostBuf);
-	*/
-	uint32_t Sent = 0;
-	uint32_t InitTime= HAL_GetTick() ;
-	LCD_Init(GRAYBLUE);
-	uint8_t  lcd_id[24];
-	sprintf((char*)lcd_id,"Initialing...");
-    LCD_ShowStringLine(LINE1,"hello Clion!222");
-	//POINT_COLOR=RED;
 
-	LCD_ShowStringLine(LINE3,lcd_id);
-	BACK_COLOR=BLUE;
-	LCD_ShowStringLine(LINE10,(uint8_t*)"               Build:"__TIME__);
-	BACK_COLOR=GRAYBLUE;
-	sprintf((char*)lcd_id,"Initialing... done");
-	MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
-	LCD_ShowStringLine(LINE3,lcd_id);
-	struct dhcp *dhcp = netif_dhcp_data(netif_default);
+    //tcp_echoserver_init();
+    printf("good "__TIME__"\n");
+    App_test_LD_STORE();
+    int ret =0;
+    //ret = EE_init();
+    //printf("%d\n",ret);
+    //HAL_I2C_DeInit(&hi2c1);
+    //HAL_I2C_Init(&hi2c1);
+    /*
+    httpc_connection_t httpc_settings= { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
+    httpc_state_t    * phttpc_state = NULL;
+    ip4_addr_t addr;
+    IP4_ADDR(&addr,192,168,3,3);
+    uint32_t InitTime= HAL_GetTick();
+    uint32_t Sent = 0;
+    uint8_t PostBuf[128];
+    httpc_settings.body_len=snprintf((char*)PostBuf,128,\
+    "{\"datastreams\": [{\"id\": \"temperature\",\"datapoints\": [{\"value\": \"27\"}]}]}");
+    httpc_settings.method = HTTPC_METHOD_POST;
+    httpc_settings.post_body=&(PostBuf);
+    */  //httpc
+    uint32_t Sent = 0;
+    uint32_t InitTime = HAL_GetTick() ;
+    This.state = ST_Genesis;
+    tictok.Init();
+    LCD_Init(GRAYBLUE);
+    LcdPrint(LINE1,"hello Clion!2022");
+    LCD_push(BLUE);
+    LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
+    LCD_pop();
+    LcdPrint(LINE2,"Initialing lwip...");
+    MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备
+    LcdPrint(LINE2,"Initialing lwip... done");
+    LcdPrint(LINE3,"Waiting DHCP...");
+    tictok.Add(check_dhcp_callback,300,false); //300ms检查一次dhcp状态
 
   /* USER CODE END 2 */
 
@@ -175,13 +194,18 @@ int main(void)
 		//目前选择的dhcp失败标记：4秒后state仍为0x06或
 		//正统方法：tries大于6
 		if(HAL_GetTick()-InitTime>8000 && Sent ==0){
-			sprintf((char*)lcd_id,"%s",ip4addr_ntoa(&(dhcp->offered_ip_addr)));
-			LCD_ShowStringLine(LINE4,lcd_id);
-			sprintf((char*)lcd_id,"%s",ip4addr_ntoa(&(dhcp->offered_gw_addr)));
-			LCD_ShowStringLine(LINE5,lcd_id);
 			//httpc_request_file(&addr,80,"/file.php",&httpc_settings,NULL,phttpc_state,&phttpc_state);
 			Sent=1;
 		}
+        if(t10ms == 1){
+            t10ms = 0;
+        }
+        if(t200ms == 1){
+            t200ms = 0;
+            This.keys = key_reader();
+
+        }
+        tictok.tock();
 		
     /* USER CODE END WHILE */
 
@@ -383,11 +407,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
@@ -397,6 +421,18 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(ETH_RESET_GPIO_Port, ETH_RESET_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pins : KEY2_Pin KEY1_Pin KEY0_Pin */
+  GPIO_InitStruct.Pin = KEY2_Pin|KEY1_Pin|KEY0_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : KEY_UP_Pin */
+  GPIO_InitStruct.Pin = KEY_UP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(KEY_UP_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LCD_BL_Pin */
   GPIO_InitStruct.Pin = LCD_BL_Pin;
