@@ -8,7 +8,8 @@ static void      tick   (void);
 static void      tock   (void);
 static uint32_t  Add    (void(*)(uint32_t),uint32_t,_Bool);
 static void      Remove (uint32_t);
-static void Init(void);
+static void      Wipe(void);
+static void      Init(void);
 #define Task_Empty   (-2)
 
 typedef struct{
@@ -27,10 +28,11 @@ TicTok tictok={
         .tock   =   tock,
         .Add    =   Add,
         .Remove =   Remove,
-        .Init   =   Init
+        .Init   =   Init,
+        .Wipe   =   Wipe
 };
 
-static Task task_list[10];
+static Task task_list[8];
 
 static void Init(void){
 
@@ -98,6 +100,17 @@ static void  Remove(uint32_t ID){
     for(i=0;i<sizeof(task_list)/sizeof(task_list[0]);i++){
         p=&task_list[i];
         if(p->ID==ID){
+            p->ID=Task_Empty;
+            break;
+        }
+    }
+}
+static void      Wipe(void){
+    int i;
+    Task *p;
+    for(i=0;i<sizeof(task_list)/sizeof(task_list[0]);i++){
+        p=&task_list[i];
+        if(p->ID!=Task_Empty){
             p->ID=Task_Empty;
             break;
         }

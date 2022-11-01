@@ -15,6 +15,7 @@ typedef struct {
     void      (*Remove) (uint32_t);
     uint32_t  (*Add)    (void(*)(uint32_t),uint32_t,_Bool OneShoot);
     void      (*Init)   (void);
+    void      (*Wipe)   (void);
 }TicTok;
 
 extern TicTok tictok;

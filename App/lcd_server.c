@@ -28,6 +28,18 @@ void lcd_server(){
             LCD_clearLine(LINE3);
             LCD_ShowStringLine(LINE2,"Ready for reading");
             LCD_ShowStringLine(LINE3,"Press any key to continue");
+            break;
+        case ST_Earth:
+            break;
+        case ST_Golden_Key:
+            LCD_ShowStringLine(LINE2,"Ready for registering");
+            LCD_ShowStringLine(LINE3,"Press any key to continue");\
+            break;
+        case ST_Empyrean:
+            LCD_ShowStringLine(LINE1,"");
+            break;
+        default:
+            _TRAP;
     }
 
 }

@@ -10,5 +10,6 @@
 HAL_StatusTypeDef  EE_init ();
 HAL_StatusTypeDef  EE_Load(App_info*);
 HAL_StatusTypeDef  EE_Store(App_info*);
+void EE_wipe();
 
 #endif //RS_EEPROM_H
