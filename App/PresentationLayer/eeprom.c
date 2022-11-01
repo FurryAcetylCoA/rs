@@ -5,6 +5,7 @@
 #include "eeprom.h"
 #include "string.h"
 #include "stdio.h"
+#include "eeprom_drv.h"
 
 static uint32_t EE_checked;
 
@@ -24,10 +25,6 @@ HAL_StatusTypeDef EE_init(){
 
     HAL_Delay(1);
     EE_read (231,string_echo,sizeof(string));
-    if(hr != HAL_OK){
-        _TRAP;
-        return hr;
-    }
     hr = (0 == strcmp((char*)string, (char*)string_echo)) ? HAL_OK : HAL_ERROR;
 
     if (hr != HAL_OK){
@@ -74,8 +71,13 @@ HAL_StatusTypeDef EE_Load(App_info *appInfo){
         appInfo->devs[i].sens_desc.data1.factor      = miniPow(tempFactor);
         appInfo->devs[i].sens_desc.data2.is_signed   = (ERom.devs[i].data_struct & 0b00001000) >> 3;
         appInfo->devs[i].sens_desc.data2.exist       = (ERom.devs[i].data_struct & 0b00000100) >> 2;
-        tempFactor                                   = (ERom.devs[i].data_struct & 0b00000011);
-        appInfo->devs[i].sens_desc.data2.factor      = miniPow(tempFactor);
+        if(appInfo->devs[i].sens_desc.data2.exist){
+            tempFactor                                   = (ERom.devs[i].data_struct & 0b00000011);
+            appInfo->devs[i].sens_desc.data2.factor      = miniPow(tempFactor);
+        }else{
+            appInfo->devs[i].sens_desc.data2.factor      = 0;
+        }
+
     }
     This.config.eeprom_ready = 1;
     return  HAL_OK;
@@ -133,6 +135,7 @@ uint16_t miniPow(uint8_t f){
 }
 static uint8_t  miniLog (uint16_t f){
     switch (f){
+        case 0:
         case 1:
             return 0;
         case 10:

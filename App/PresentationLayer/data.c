@@ -7,7 +7,7 @@
 
 
 static void sdata_Poll(uint32_t current_poll);
-static void sdata_Poll_Pub();
+static void sdata_Poll_Pub(uint32_t arg);
 static void sdata_PollAll();
 
 static uint32_t current_poll_pub;
@@ -23,7 +23,8 @@ S_Data s_data={
 *
 * @retval None.
 */
-static void sdata_Poll_Pub(){
+static void sdata_Poll_Pub(uint32_t arg){
+    UNUSED(arg);
     sdata_Poll(current_poll_pub);
 
     current_poll_pub++;

@@ -9,7 +9,7 @@
 #include "App.h"
 
 typedef struct {
-    void (*Poll)(void);
+    void (*Poll)(uint32_t);
     void (*Pollall)(void);
 }S_Data;
 

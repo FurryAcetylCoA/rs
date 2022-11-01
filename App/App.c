@@ -5,6 +5,7 @@
 #include "App.h"
 #include "string.h"
 #include "stdio.h"
+#include "tictok.h"
 #include "data.h"
 
 static void App_init();
@@ -27,7 +28,7 @@ void App_test_LD_STORE(){
     This.devs[0].sens_desc.data1.mult_or_div = 1;
     This.devs[0].sens_desc.data2.exist =1;
     This.devs[0].sens_desc.data2.factor = 10;
-    This.devs[1].sens_desc.address = 0x87;
+    This.devs[1].sens_desc.address = 0x77;
     This.devs[1].sens_desc.inst_sized = 0;
     This.devs[1].sens_desc.name_index = 7;
     This.devs[1].sens_desc.data1.is_signed = 0;
@@ -53,7 +54,7 @@ void App_test_LD_STORE(){
     memset(&This2,0,sizeof(This2));
     EE_Load(&This2);
 
-    if(memcpy(&This,&This2,sizeof(This))!=NULL){
+    if(memcmp(This.devs,This2.devs,sizeof(This.devs))!=0){
         _TRAP;
     }
     _TRAP;
@@ -99,7 +100,18 @@ static void State_go(States next_state){
             break;
         case ST_Earth:
             //填充所有数据，然后注册数据中间件轮询到时钟中心
-
+            s_data.Pollall();
+            tictok.Add(s_data.Poll,1000,false);
+            This.state=ST_Earth;
+            break;
+        case ST_Golden_Key:
+            //进入设备注册
+            This.state=ST_Golden_Key;
+            break;
+        case ST_Empyrean:
+            EE_Load(&This);
+            This.state=ST_Empyrean;
+            break;
 
         default:
             _TRAP;

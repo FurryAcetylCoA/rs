@@ -6,7 +6,7 @@
 #define RS_EEPROM_H
 #include "main.h"
 #include "App.h"
-#include "eeprom_drv.h"
+
 HAL_StatusTypeDef  EE_init ();
 HAL_StatusTypeDef  EE_Load(App_info*);
 HAL_StatusTypeDef  EE_Store(App_info*);
