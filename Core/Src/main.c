@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "lwip.h"
 #include "stm32f4xx_it.h"
+#include "stdbool.h"
 //#include "tcp_echo.h"
 //#include "tcp_client.h"
 #include "http_client.h"
@@ -96,21 +97,31 @@ int fputc(int ch,FILE *f)
 }
 void check_dhcp_callback(uint32_t ID){
     struct dhcp *dhcp = netif_dhcp_data(netif_default);
-    if(dhcp->state == 10){ //10:DHCP_STATE_BOUND see prot\dhcp.h
-        LcdPrint(LINE3,"Waiting DHCP...done");
-        LcdPrint(LINE4,"IP:%s",ip4addr_ntoa(&(dhcp->offered_ip_addr)));
-        LcdPrint(LINE5,"GW:%s",ip4addr_ntoa(&(dhcp->offered_gw_addr)));
-        tictok.Remove(ID);
-        This.state_go(ST_saint_peter);
-    }else if(dhcp->tries >=6){
-        LCD_push(RED);
-        LcdPrint(LINE3,"Waiting DHCP...failed");
-        LCD_pop();
-        LcdPrint(LINE4,"keep trying to get DHCP");
+    if(dhcp != NULL){
+        if (dhcp->state == 10) { //10:DHCP_STATE_BOUND see prot\dhcp.h
+            LcdPrint(LINE4, "Waiting DHCP...done");
+            LcdPrint(LINE5, "IP:%s", ip4addr_ntoa(&(dhcp->offered_ip_addr)));
+            LcdPrint(LINE6, "GW:%s", ip4addr_ntoa(&(dhcp->offered_gw_addr)));
+            tictok.Remove(ID);
+            This.state_go(ST_saint_peter);
+        } else if(dhcp->tries >= 3 && dhcp->tries < 5) {
+            LcdPrint(LINE4, "Waiting DHCP...tried: %d",dhcp->tries);
 
+        }else if(dhcp->tries >= 5) {
+            This.on_error(__func__);
+        }
+
+    }else{ //dhcp结构体没有被分配，说明interface根本没起来，这个时候应该卡在“No link”那里了
+        //does nothing
     }
 }
 
+bool check_if_up(){
+    if(! (netif_default->flags & 0x01)){ //see netif.h for details
+        return false;
+    }
+    return true;
+}
 /* USER CODE END 0 */
 
 /**
@@ -150,7 +161,7 @@ int main(void)
 
     //tcp_echoserver_init();
     printf("good "__TIME__"\n");
-    App_test_LD_STORE();
+    //EE_wipe();
     int ret =0;
     //ret = EE_init();
     //printf("%d\n",ret);
@@ -181,8 +192,19 @@ int main(void)
     LcdPrint(LINE2,"Initialing lwip...");
     MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备
     LcdPrint(LINE2,"Initialing lwip... done");
-    LcdPrint(LINE3,"Waiting DHCP...");
-    tictok.Add(check_dhcp_callback,300,false); //300ms检查一次dhcp状态
+    LcdPrint(LINE3,"Checking if up ...");
+    if(check_if_up()){
+        LcdPrint(LINE3,"Checking if up ...Ok");
+        LcdPrint(LINE4,"Waiting DHCP...");
+    }else{
+        LcdPrint(LINE3,"Checking if up ...No link");
+        LcdPrint(LINE4,"Did you plug the cabal?");
+        LCD_push(RED);
+        LCD_ShowStringLine(LINE10,"ERROR");
+        LCD_pop();
+    }
+
+    tictok.Add(check_dhcp_callback,600,false); //300ms检查一次dhcp状态
 
   /* USER CODE END 2 */
 

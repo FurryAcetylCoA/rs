@@ -11,6 +11,7 @@
 /////////////////////////////////
 typedef enum{
     ST_Genesis =0, //初始状态
+    ST_Limbo,      //错误捕获及提示
     ST_saint_peter,
     ST_Silver_Key, //等待进入正常显示
     ST_Earth,      //正常显示
@@ -94,6 +95,7 @@ typedef struct{
         void (*state_go) (States);
         void (*init)     (void)  ;
         void (*state_server)(void);
+        void (*on_error) (char*);
     };
     App_dev_desc devs[10];
 }App_info;

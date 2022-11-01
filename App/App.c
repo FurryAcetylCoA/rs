@@ -7,18 +7,21 @@
 #include "stdio.h"
 #include "tictok.h"
 #include "data.h"
+#include "lcd_gxct.h"
 
 static void App_init();
 static void State_go(States next_state);
 static void State_server(void);
+static void on_error (char*);
 App_info This={
         .init     = App_init,
         .state_go = State_go,
-        .state_server = State_server
+        .state_server = State_server,
+        .on_error = on_error
 };
 
 void App_test_LD_STORE(){
-
+    //最近一次通过测试
     This.config.dev_count = 3;
     This.devs[0].sens_desc.address = 0x32;
     This.devs[0].sens_desc.inst_sized = 1;
@@ -90,6 +93,9 @@ static void State_server(){
 */
 static void State_go(States next_state){
     //状态转移
+    if(This.state == ST_Limbo){
+        return; //limbo 状态不允许移出
+    }
     switch (next_state) {
         case ST_Genesis:
             _TRAP;
@@ -112,9 +118,20 @@ static void State_go(States next_state){
             EE_Load(&This);
             This.state=ST_Empyrean;
             break;
-
+        case ST_Limbo:
+            tictok.Wipe();
+            This.state=ST_Limbo;
+            break;
         default:
             _TRAP;
 
     }
+}
+static void on_error (char* err){
+    This.state_go(ST_Limbo);
+    LCD_push(RED);
+    char buffer[26];
+    snprintf((char*)buffer,25,"ERR:%s     ",err);
+    LCD_ShowStringLine(LINE10, buffer);
+    LCD_pop();
 }
