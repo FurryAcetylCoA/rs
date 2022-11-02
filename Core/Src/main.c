@@ -30,7 +30,7 @@
 #include "App.h"
 #include "lcd_gxct.h"
 #include "stdio.h"
-#include "string.h"
+#include "lcd_server.h"
 #include "tictok.h"
 /* USER CODE END Includes */
 
@@ -99,10 +99,12 @@ void check_dhcp_callback(uint32_t ID){
     struct dhcp *dhcp = netif_dhcp_data(netif_default);
     if(dhcp != NULL){
         if (dhcp->state == 10) { //10:DHCP_STATE_BOUND see prot\dhcp.h
+            LCD_clearLine(LINE4);
             LcdPrint(LINE4, "Waiting DHCP...done");
             LcdPrint(LINE5, "IP:%s", ip4addr_ntoa(&(dhcp->offered_ip_addr)));
             LcdPrint(LINE6, "GW:%s", ip4addr_ntoa(&(dhcp->offered_gw_addr)));
             tictok.Remove(ID);
+            HAL_Delay(1000); //尽管阻塞等待这么久不是好习惯，但系统在这个阶段还没有什么任务在执行
             This.state_go(ST_saint_peter);
         } else if(dhcp->tries >= 3 && dhcp->tries < 5) {
             LcdPrint(LINE4, "Waiting DHCP...tried: %d",dhcp->tries);
@@ -180,6 +182,7 @@ int main(void)
     httpc_settings.method = HTTPC_METHOD_POST;
     httpc_settings.post_body=&(PostBuf);
     */  //httpc
+    App_test_misc();
     uint32_t Sent = 0;
     uint32_t InitTime = HAL_GetTick() ;
     This.state = ST_Genesis;
@@ -190,7 +193,7 @@ int main(void)
     LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
     LCD_pop();
     LcdPrint(LINE2,"Initialing lwip...");
-    MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备
+    MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
     LcdPrint(LINE2,"Initialing lwip... done");
     LcdPrint(LINE3,"Checking if up ...");
     if(check_if_up()){
@@ -204,7 +207,7 @@ int main(void)
         LCD_pop();
     }
 
-    tictok.Add(check_dhcp_callback,600,false); //300ms检查一次dhcp状态
+    tictok.Add(check_dhcp_callback,400,false); //400ms检查一次dhcp状态
 
   /* USER CODE END 2 */
 
@@ -224,7 +227,9 @@ int main(void)
         }
         if(t200ms == 1){
             t200ms = 0;
+            This.state_server();
             This.keys = key_reader();
+            lcd_server();
 
         }
         tictok.tock();
@@ -402,7 +407,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -442,6 +447,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LCD_BL_GPIO_Port, LCD_BL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(ETH_RESET_GPIO_Port, ETH_RESET_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : KEY2_Pin KEY1_Pin KEY0_Pin */
@@ -462,6 +470,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LCD_BL_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : RS485_RE_Pin */
+  GPIO_InitStruct.Pin = RS485_RE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(RS485_RE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : ETH_RESET_Pin */
   GPIO_InitStruct.Pin = ETH_RESET_Pin;

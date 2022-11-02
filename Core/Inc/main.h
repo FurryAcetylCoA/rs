@@ -37,6 +37,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 extern I2C_HandleTypeDef hi2c1;
+extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim4;
 /* USER CODE END ET */
 
@@ -74,6 +75,8 @@ void Error_Handler(void);
 #define KEY_UP_GPIO_Port GPIOA
 #define LCD_BL_Pin GPIO_PIN_15
 #define LCD_BL_GPIO_Port GPIOB
+#define RS485_RE_Pin GPIO_PIN_8
+#define RS485_RE_GPIO_Port GPIOG
 #define ETH_RESET_Pin GPIO_PIN_3
 #define ETH_RESET_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
