@@ -4,34 +4,14 @@
 
 #include "sensor.h"
 #include "string.h"
-
-typedef __PACKED_STRUCT {
-    uint8_t address;
-    uint8_t opCode;
-    __PACKED_UNION{
-        __PACKED_STRUCT{
-            uint8_t dataAddHi;
-            uint8_t dataAddLo;
-            uint8_t dataHi;
-            uint8_t dataLo;
-            uint8_t crc16Lo;
-            uint8_t crc16Hi;
-        }withNoLen;
-        __PACKED_STRUCT{
-            uint8_t dataLen;  //这俩就差这块
-            uint8_t dataAddHi;
-            uint8_t dataAddLo;
-            uint8_t dataHi;
-            uint8_t dataLo;
-            uint8_t crc16Lo;
-            uint8_t crc16Hi;
-        }withLen;
-    };
-}Sens_buffer;
-
+#include "crc16.h"
+#include "rs485.h"
+#include "stdbool.h"
 static void fill_crc16(Sens_buffer *buf, uint8_t sized);
-static uint32_t crc16(const uint8_t *buf,uint32_t len);
+static bool check_06(const uint8_t *buf, uint32_t size);
+static bool check_03(const uint8_t *buf, uint32_t size){
 
+}
 /**
 * @brief get device address using broadcast
 * This function will try to communicate with the device using address specified in dev.
@@ -48,14 +28,16 @@ sens_ErrCode sens_TryAddr(Sens_dev_desc *dev){
     sens_buffer.opCode  = 0x06;
     if(dev->inst_sized == 1){
         sens_buffer.withLen.dataLen = 0x04; //长度固定
-        sens_buffer.withLen.dataLo = dev->address; //不知道能不能这样原地踏步
+        sens_buffer.withLen.dataLo = dev->address;
         fill_crc16(&sens_buffer, 1);
     }else{
-        sens_buffer.withNoLen.dataLo = dev->address; //不知道能不能这样原地踏步
+        sens_buffer.withNoLen.dataLo = dev->address;
         fill_crc16(&sens_buffer, 0);
     }
     //发送命令 阻塞式等待
     uint8_t successed =1;
+    uint32_t txsize = (dev->inst_sized == 0? 8 :9);
+    rs485_send((const uint8_t *) &sens_buffer, txsize, 9);
     if(successed){ //设备有回应，说明地址和指令格式正确
         return sens_success;
     }else{//
@@ -122,30 +104,39 @@ static void fill_crc16(Sens_buffer *buf, uint8_t sized){
         buf->withNoLen.crc16Lo = *((uint8_t*)&crc + 0);
     }
 }
-
-
 /**
-* @brief calculate crc checksum in command
-* stm32自带的crc外设只能算crc32
-* @param buf: command buffer pointer
-* @param sized: 1 for withLen and 0 for withNoLen
+* @brief check rx data of command 06(address set) from sensors
+* Given that chances of 485 receiving an extra byte at the beginning are high
+* This function will try to parse it in many ways.
+* And unify it if possible (not impl yet)
+* @param buf: rx buffer
+* @param size: size of rx buffer
+* @retval true on valid data; false on invalid data
 */
-static uint32_t crc16(const uint8_t *buf,uint32_t len){
-    uint32_t c, crc=0xFFFF;
-    for(int i=0; i<len; i++)
-    {
-        c = *((uint8_t*)buf +i ) & 0x00FF;
-        crc ^= c;
-        for(int j=0; j<8; j++)
-        {
-            if (crc & 0x0001)
-            {
-                crc >>= 1;
-                crc ^= 0xA001;
-            }else {
-                crc >>= 1;
-            }
-        }
+static bool check_06(const uint8_t *buf, uint32_t size){
+    const uint8_t *ptr;
+    //首先先检查偏移一位的情况
+    ptr = buf + 1;
+    if(size <8){
+        _TRAP;
     }
-    return crc;
+    crc_t crc;
+    crc.U = crc16(ptr,8);
+    //注意：06指令返回格式好像还有问题，有些是原样返回8字节，有些是返回11字节
+    //得检查一下
+}
+//接收会多接收到一位，在最开头 这一位还不一定是什么 大多数情况是00，但也有不是的
+//而在小概率情况下会收到没有多余一位的
+//这个和终结电阻可能有关
+/**
+* @brief check rx data of command 03(sensor read) from sensors
+* Given that chances of 485 receiving an extra byte at the beginning are high
+* This function will try to parse it in many ways.
+* And unify it if possible (not impl yet)
+* @param buf: rx buffer
+* @param size: size of rx buffer
+* @retval true on valid data; false on invalid data
+*/
+static bool check_03(const uint8_t *buf, uint32_t size){
+
 }

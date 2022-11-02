@@ -12,5 +12,5 @@
 //    FUNCTION    //
 ////////////////////
 
-void   App_test_LD_STORE();
+void   App_test_misc();
 #endif //RS_APP_H

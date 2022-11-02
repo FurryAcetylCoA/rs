@@ -22,6 +22,31 @@ typedef enum{
 /////////////////////////////////
 //           STRUCT            //
 /////////////////////////////////
+
+typedef __PACKED_STRUCT {
+    uint8_t address;
+    uint8_t opCode;
+    __PACKED_UNION{
+        __PACKED_STRUCT{
+            uint8_t dataAddHi;
+            uint8_t dataAddLo;
+            uint8_t dataHi;
+            uint8_t dataLo;
+            uint8_t crc16Lo;
+            uint8_t crc16Hi;
+        }withNoLen;
+        __PACKED_STRUCT{
+            uint8_t dataLen;  //’‚¡©æÕ≤Ó’‚øÈ
+            uint8_t dataAddHi;
+            uint8_t dataAddLo;
+            uint8_t dataHi;
+            uint8_t dataLo;
+            uint8_t crc16Lo;
+            uint8_t crc16Hi;
+        }withLen;
+    };
+}Sens_buffer;
+
 typedef __PACKED_STRUCT{
     uint8_t inst_and_addr;
     uint8_t data_struct;
@@ -95,7 +120,7 @@ typedef struct{
         void (*state_go) (States);
         void (*init)     (void)  ;
         void (*state_server)(void);
-        void (*on_error) (char*);
+        void (*on_error) (const char*);
     };
     App_dev_desc devs[10];
 }App_info;
