@@ -8,10 +8,9 @@
 #include "rs485.h"
 #include "stdbool.h"
 static void fill_crc16(Sens_buffer *buf, uint8_t sized);
-static bool check_06(const uint8_t *buf, uint32_t size);
-static bool check_03(const uint8_t *buf, uint32_t size){
+static bool check_03(uint8_t **buf, uint32_t size);
 
-}
+
 /**
 * @brief get device address using broadcast
 * This function will try to communicate with the device using address specified in dev.
@@ -56,31 +55,44 @@ sens_ErrCode sens_GetVal(Sens_dev_desc *dev){
     sens_buffer.opCode  = 0x03;
 
     //根据手册，只有设置/查询地址的时候，才会有可能有size。正常读取统一没有
+    //所以这里选取withNoLen
     sens_buffer.withNoLen.dataLo = dev->data2.exist ? 0x2 : 0x1;
     fill_crc16(&sens_buffer,0);
-
+    uint8_t rxbuf[12];//准备接收缓冲区
+    uint8_t *pprxbuf =  &rxbuf[0];
+    //返回值长度应该是3+请求数据数量*2+crc
     //发送命令。阻塞式等待
-    if(!1){
-        return sens_failed_other;
+    rs485_send((const uint8_t *) &sens_buffer, rxbuf, 8, 3 + sens_buffer.withNoLen.dataLo * 2 + 2);
+
+    if (check_03((uint8_t **) &pprxbuf, 3 + sens_buffer.withNoLen.dataLo * 2 + 2) != true){
+        //这个函数会试图让pprxbuf指向rxbuf有效部分的开头
+        _TRAP;
+        //有时候会进到这里，得加一个带延迟的重试
+        return sens_failed_crc;
     }
-    uint8_t receivebuffer[12];
-    uint8_t *datalen = &receivebuffer[2];
+
+    uint8_t *datalen = &(pprxbuf[2]);
     if(dev->data2.exist && *datalen != 0x04){ //明明有第二传感器 但是没收到
         _TRAP;
     }
-    uint32_t crc = crc16(receivebuffer,*datalen + 2 + 1);
-    if(receivebuffer [*datalen + 2 + 1] == *((uint8_t*)&crc + 0) &&\
-    receivebuffer [*datalen + 2 + 1 +1] == *((uint8_t*)&crc + 1)){
-        //发过来的数据是大端序。stm32是小端序
-        dev->data1_raw = ((uint32_t)receivebuffer[2+1+1]<<16) & \
-                         (uint32_t)receivebuffer[2+1];
-        if(dev->data2.exist){
-            dev->data1_raw = ((uint32_t)receivebuffer[2+1+1+2]<<16) & \
-                              (uint32_t)receivebuffer[2+1+2];
+
+    dev->data1_raw = ((uint32_t)pprxbuf[2 + 1 ] << 8) | \
+                        (uint32_t)pprxbuf[2 + 1 +1];
+    if (dev->data1.factor != 1){
+        if(dev->data1.mult_or_div ==1){ //1：除法
+            dev->data1_raw /= dev->data1.factor;
+        }else {
+            dev->data1_raw *= dev->data1.factor;
         }
-    }else{
-        return sens_failed_crc;
-}
+    }
+    if(dev->data2.exist){
+            dev->data2_raw = ((uint32_t)pprxbuf[2 + 1 + 2] << 8) | \
+                        (uint32_t)pprxbuf[2 + 1 + 1 + 2];
+            if (dev->data2.factor != 1){ //第二数据只有除法
+                dev->data2_raw /= dev->data2.factor;
+            }
+    }
+
     return sens_success;
 
 }
@@ -104,39 +116,35 @@ static void fill_crc16(Sens_buffer *buf, uint8_t sized){
         buf->withNoLen.crc16Lo = *((uint8_t*)&crc + 0);
     }
 }
-/**
-* @brief check rx data of command 06(address set) from sensors
-* Given that chances of 485 receiving an extra byte at the beginning are high
-* This function will try to parse it in many ways.
-* And unify it if possible (not impl yet)
-* @param buf: rx buffer
-* @param size: size of rx buffer
-* @retval true on valid data; false on invalid data
-*/
-static bool check_06(const uint8_t *buf, uint32_t size){
-    const uint8_t *ptr;
-    //首先先检查偏移一位的情况
-    ptr = buf + 1;
-    if(size <8){
-        _TRAP;
-    }
-    crc_t crc;
-    crc.U = crc16(ptr,8);
-    //注意：06指令返回格式好像还有问题，有些是原样返回8字节，有些是返回11字节
-    //得检查一下
-}
+
 //接收会多接收到一位，在最开头 这一位还不一定是什么 大多数情况是00，但也有不是的
 //而在小概率情况下会收到没有多余一位的
 //这个和终结电阻可能有关
 /**
 * @brief check rx data of command 03(sensor read) from sensors
 * Given that chances of 485 receiving an extra byte at the beginning are high
-* This function will try to parse it in many ways.
-* And unify it if possible (not impl yet)
-* @param buf: rx buffer
-* @param size: size of rx buffer
-* @retval true on valid data; false on invalid data
+* This function will try to parse it in many ways. (Using crc checksum)
+* And unify it if possible
+* @param buf: a pointer that point to rx buffer (C没有传引用这里简直扭曲得要死）
+* @param size: expected size of rx buffer (include checksum and header)
+* @retval true: successfully unify; false: unable to unify rx buffer
 */
-static bool check_03(const uint8_t *buf, uint32_t size){
+static bool check_03(uint8_t **buf, uint32_t size){
+    //先处理开头有乱码的情况
+    crc_t  crc;
+    crc.U = crc16(*buf+1,size - 2);//从第二位开始计算crc。然后和预期的位比较
+    if (crc.Lo == (*buf+1)[size - 2] && crc.Hi == (*buf+1)[size - 1]){
+        //crc确实符合，这说明确实是开头有一个乱码，并且后面都正常
+        *buf= (*buf+1); //把rx指针往后推 让调用方可以直接处理
+        return true;
+    }
+    //再处理开头直接就是数据的情况
+    crc.U = crc16(*buf,size - 2);
+    if (crc.Lo == (*buf+1)[size - 2] && crc.Hi == (*buf+1)[size - 1]){
+        //crc确实符合，这说明确实是开头就是数据，并且后面都正常
+        //不调整rx指针
+        return true;
+    }
+    return false;//无法识别的情况
 
 }

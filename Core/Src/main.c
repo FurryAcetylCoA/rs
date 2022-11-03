@@ -182,12 +182,13 @@ int main(void)
     httpc_settings.method = HTTPC_METHOD_POST;
     httpc_settings.post_body=&(PostBuf);
     */  //httpc
-    App_test_misc();
+
     uint32_t Sent = 0;
     uint32_t InitTime = HAL_GetTick() ;
     This.state = ST_Genesis;
     tictok.Init();
     LCD_Init(GRAYBLUE);
+    App_test_misc();
     LcdPrint(LINE1,"hello Clion!2022");
     LCD_push(BLUE);
     LCD_ShowStringLine(LINE10,"               Build:"__TIME__);

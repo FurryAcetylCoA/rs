@@ -23,8 +23,14 @@ App_info This={
 
 void App_test_misc(){
     Sens_dev_desc test_dev={.address=0x03,.inst_sized=0};
-    sens_TryAddr(&test_dev);
-
+    test_dev.data1.factor=10;
+    test_dev.data1.is_signed=1;
+    test_dev.data1.mult_or_div=1;
+    test_dev.data2.exist=1;
+    test_dev.data2.is_signed=0;
+    test_dev.data2.factor=10;
+    sens_GetVal(&test_dev);
+    _TRAP;
     return;
     //以下测试已通过
     This.config.dev_count = 3;
