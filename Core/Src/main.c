@@ -47,6 +47,8 @@
 /* USER CODE BEGIN PM */
 #define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
                   LCD_ShowStringLine(_LINE_,lcd_buffer);}while(0)
+
+#define ignore_network
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -188,7 +190,6 @@ int main(void)
     This.state = ST_Genesis;
     tictok.Init();
     LCD_Init(GRAYBLUE);
-    App_test_misc();
     LcdPrint(LINE1,"hello Clion!2022");
     LCD_push(BLUE);
     LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
@@ -197,7 +198,11 @@ int main(void)
     MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
     LcdPrint(LINE2,"Initialing lwip... done");
     LcdPrint(LINE3,"Checking if up ...");
+#ifdef ignore_network  //为了方便调试，可以选择忽略网络存在性检查
+    if (1){
+#else
     if(check_if_up()){
+#endif
         LcdPrint(LINE3,"Checking if up ...Ok");
         LcdPrint(LINE4,"Waiting DHCP...");
     }else{
@@ -207,9 +212,11 @@ int main(void)
         LCD_ShowStringLine(LINE10,"ERROR");
         LCD_pop();
     }
-
+#ifdef ignore_network
+    This.state_go(ST_saint_peter);
+#else
     tictok.Add(check_dhcp_callback,400,false); //400ms检查一次dhcp状态
-
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
