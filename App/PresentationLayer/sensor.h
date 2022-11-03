@@ -14,7 +14,7 @@ typedef enum{
     sens_failed_other
 }sens_ErrCode;
 
-sens_ErrCode sens_TryAddr(Sens_dev_desc *dev);
+
 sens_ErrCode sens_SetAddr(Sens_dev_desc *dev,uint8_t addr);
 sens_ErrCode sens_GetVal (Sens_dev_desc *dev);
 

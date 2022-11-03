@@ -22,7 +22,15 @@ App_info This={
 };
 
 void App_test_misc(){
-    Sens_dev_desc test_dev={.address=0x03,.inst_sized=0};
+   // goto read_test;
+    Sens_dev_desc test_dev2={.inst_sized=0};
+    sens_ErrCode ret =sens_SetAddr(&test_dev2,0x04);
+    _TRAP;
+    return;
+    read_test:
+    _TRAP;
+    //以下测试已通过
+    Sens_dev_desc test_dev={.address=0x04,.inst_sized=0};
     test_dev.data1.factor=10;
     test_dev.data1.is_signed=1;
     test_dev.data1.mult_or_div=1;
@@ -32,7 +40,6 @@ void App_test_misc(){
     sens_GetVal(&test_dev);
     _TRAP;
     return;
-    //以下测试已通过
     This.config.dev_count = 3;
     This.devs[0].sens_desc.address = 0x32;
     This.devs[0].sens_desc.inst_sized = 1;

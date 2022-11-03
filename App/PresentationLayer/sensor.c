@@ -11,39 +11,66 @@ static void fill_crc16(Sens_buffer *buf, uint8_t sized);
 static bool check_03(uint8_t **buf, uint32_t size);
 
 
-/**
-* @brief get device address using broadcast
-* This function will try to communicate with the device using address specified in dev.
-* If such communicate can't be establish. It will return with error.
-* @param dev: device handle pointer
-* @retval sens_success on success; sens_failed_timeout on failure.
-*/
-sens_ErrCode sens_TryAddr(Sens_dev_desc *dev){
-    //尝试建立连接，首先尝试使用dev中指定的连接方式
+//使用广播方式设置设备地址
+//这种情况下，dev中只有inst_sized是有意义的
+sens_ErrCode sens_SetAddr(Sens_dev_desc *dev,uint8_t addr){
     Sens_buffer sens_buffer;
     memset(&sens_buffer,0,sizeof(sens_buffer));
 
-    sens_buffer.address = dev->address;
+    sens_buffer.address = 0xFE; //broadcast
     sens_buffer.opCode  = 0x06;
-    if(dev->inst_sized == 1){
-        sens_buffer.withLen.dataLen = 0x04; //长度固定
-        sens_buffer.withLen.dataLo = dev->address;
-        fill_crc16(&sens_buffer, 1);
+
+    if (dev->inst_sized){
+        sens_buffer.withLen.dataLo = addr;
+        fill_crc16(&sens_buffer,1);
     }else{
-        sens_buffer.withNoLen.dataLo = dev->address;
-        fill_crc16(&sens_buffer, 0);
+        sens_buffer.withNoLen.dataLo = addr;
+        fill_crc16(&sens_buffer,0);
     }
-    //发送命令 阻塞式等待
-    uint8_t successed =1;
+    uint8_t rxbuf[12]={0};//准备接收缓冲区
     uint32_t txsize = (dev->inst_sized == 0? 8 :9);
-    rs485_send((const uint8_t *) &sens_buffer, txsize, 9);
-    if(successed){ //设备有回应，说明地址和指令格式正确
-        return sens_success;
-    }else{//
-        return sens_failed_timeout;
-    }
+    rs485_send((const uint8_t *) &sens_buffer, rxbuf, txsize, 11);
+    HAL_Delay(2);
+    rs485_send((const uint8_t *) &sens_buffer, rxbuf, txsize, 11);
+    //简单粗暴发两遍，确保成功
 
+    //06指令的返回格式差异非常大，如果考虑到第一位可能的乱码，那么就会更复杂，
+    //所以这里使用一个不标准的方式大概验证一下返回数据的有效性
+    //根据观察，几种返回格式共同的特点是：
+    //  1）都有0x06    2）都有连续3个0x00接一个新地址
+    /*int step=0;
+    for (uint8_t* p=rxbuf;p < (rxbuf+sizeof(rxbuf));p++) {
+        switch (step) {
+            case 0:
+                if (*p == 0x06){step++;} break;
+            case 1:
+                if (*p == 0x00){step++;} break;
+            case 2:
+            case 3:
+                if (*p == 0x00){
+                    step++;
+                }else{
+                    step =2;
+                }
+                break;
+            case 4:
+                if (*p == addr){
+                    step++;
+                }else{
+                    step = -1;
+                }
+                break;
+            default:
+                break;
+        }
+    }//for
+    if(step != 5){ //没有完成所有匹配，说明命令失败
+        return sens_failed_other;
+    }*/
+    //以上纯属扯淡，这玩意的返回值根本跟手册对不上，但确确实实是改成功了
+    dev->address=addr;
 
+    return sens_success;
 }
 
 sens_ErrCode sens_GetVal(Sens_dev_desc *dev){
@@ -104,7 +131,6 @@ sens_ErrCode sens_GetVal(Sens_dev_desc *dev){
 * @param sized: 1 for withLen and 0 for withNoLen
 */
 static void fill_crc16(Sens_buffer *buf, uint8_t sized){
-    uint32_t i, j;
     uint8_t len = (sized == 0? 8 :9) - 2;//总长度减2，即不算那俩CRC
     uint32_t crc = crc16((uint8_t*)buf,len);
 
@@ -116,6 +142,7 @@ static void fill_crc16(Sens_buffer *buf, uint8_t sized){
         buf->withNoLen.crc16Lo = *((uint8_t*)&crc + 0);
     }
 }
+
 
 //接收会多接收到一位，在最开头 这一位还不一定是什么 大多数情况是00，但也有不是的
 //而在小概率情况下会收到没有多余一位的
