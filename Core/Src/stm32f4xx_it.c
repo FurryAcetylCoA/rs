@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "tictok.h"
+#include "lcd_gxct.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,6 +92,8 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+      BACK_COLOR=RED;
+      LCD_ShowStringLine(LINE10,"HardFault");
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
 }
