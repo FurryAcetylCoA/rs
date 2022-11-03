@@ -8,7 +8,7 @@
 #include "datastruct.h"
 
 
-void rs485_send(const uint8_t buf[], uint32_t txsize, uint32_t rxsize);
+void rs485_send(const uint8_t txbuf[],uint8_t rxbuf[],uint32_t txsize, uint32_t rxsize);
 
 
 #endif //RS_RS485_H
