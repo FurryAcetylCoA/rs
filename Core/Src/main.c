@@ -32,6 +32,7 @@
 #include "stdio.h"
 #include "lcd_server.h"
 #include "tictok.h"
+#include "key_services.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,13 +92,18 @@ void httpc_result_fn_impl(void *arg, httpc_result_t httpc_result, u32_t rx_conte
 	LWIP_UNUSED_ARG(err);
 	printf("httpc_result_fn_impl \n");
 }
+
+
+
+
 int fputc(int ch,FILE *f)
 {
     UNUSED(f);
     HAL_UART_Transmit(&huart1,(uint8_t *)&ch,1,0xfff);        //UartHandle是串口的句柄
     return ch;
 }
-void check_dhcp_callback(uint32_t ID){
+
+void check_dhcp_callback(){
     struct dhcp *dhcp = netif_dhcp_data(netif_default);
     if(dhcp != NULL){
         if (dhcp->state == 10) { //10:DHCP_STATE_BOUND see prot\dhcp.h
@@ -105,7 +111,7 @@ void check_dhcp_callback(uint32_t ID){
             LcdPrint(LINE4, "Waiting DHCP...done");
             LcdPrint(LINE5, "IP:%s", ip4addr_ntoa(&(dhcp->offered_ip_addr)));
             LcdPrint(LINE6, "GW:%s", ip4addr_ntoa(&(dhcp->offered_gw_addr)));
-            tictok.Remove(ID);
+            tictok.Remove(This.check_dhcp_callback_tictok_ID);
             HAL_Delay(1000); //尽管阻塞等待这么久不是好习惯，但系统在这个阶段还没有什么任务在执行
             This.state_go(ST_saint_peter);
         } else if(dhcp->tries >= 3 && dhcp->tries < 5) {
@@ -188,14 +194,19 @@ int main(void)
     uint32_t Sent = 0;
     uint32_t InitTime = HAL_GetTick() ;
     This.state = ST_Genesis;
+    This.init();
     tictok.Init();
     LCD_Init(GRAYBLUE);
+
+    tictok.Add(lcd_server,1000,0);//把部分定期执行的放到时钟中心里，以增强异步性
+
     LcdPrint(LINE1,"hello Clion!2022");
     LCD_push(BLUE);
     LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
     LCD_pop();
     LcdPrint(LINE2,"Initialing lwip...");
     MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
+    MX_LWIP_Process();
     LcdPrint(LINE2,"Initialing lwip... done");
     LcdPrint(LINE3,"Checking if up ...");
 #ifdef ignore_network  //为了方便调试，可以选择忽略网络存在性检查
@@ -215,8 +226,12 @@ int main(void)
 #ifdef ignore_network
     This.state_go(ST_saint_peter);
 #else
+    MX_LWIP_Process();
     tictok.Add(check_dhcp_callback,400,false); //400ms检查一次dhcp状态
 #endif
+
+  tictok.Add(This.state_server,200,0);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -233,11 +248,11 @@ int main(void)
         if(t10ms == 1){
             t10ms = 0;
         }
-        if(t200ms == 1){
-            t200ms = 0;
-            This.state_server();
+        if(t100ms == 1){
+            t100ms = 0;
+            //为了增强异步性，部分定时任务被移到时钟中心了
             This.keys = key_reader();
-            lcd_server();
+            key_services();
 
         }
         tictok.tock();
