@@ -5,6 +5,11 @@
 #ifndef RS_DATASTRUCT_H
 #define RS_DATASTRUCT_H
 #include "stm32f4xx_hal.h"
+/////////////////////////////////
+//            ENUM             //
+/////////////////////////////////
+
+
 
 /////////////////////////////////
 //            ENUM             //
@@ -19,6 +24,10 @@ typedef enum{
     ST_Empyrean,   //设备注册
 }States;
 
+typedef enum{
+    ES_Devname =0, //初始状态
+    ES_Conform
+}Empyrean_States;
 /////////////////////////////////
 //           STRUCT            //
 /////////////////////////////////
@@ -57,9 +66,6 @@ typedef __PACKED_STRUCT{
 
 typedef __PACKED_STRUCT{
     uint8_t dev_count;
-    // uint8_t dummy1;
-    //uint8_t dummy2;
-    //uint8_t dummy3;
 }E2PRom_config;
 
 typedef __PACKED_STRUCT{
@@ -88,6 +94,12 @@ typedef struct{
 }Sens_dev_desc;// 数据链路级传感器描述符
 
 typedef struct{
+    Sens_data_struct data1;
+    Sens_data_struct data2;
+    uint8_t name[32];
+}Dev_desc;
+
+typedef struct{
     Sens_dev_desc   sens_desc;
     int32_t  data1;
     int32_t  data2;
@@ -108,13 +120,19 @@ typedef __PACKED_UNION {
     };
     uint32_t U;
 }Key_data;
-
+typedef struct{
+    Empyrean_States es_state;
+    uint8_t es_select;
+    uint8_t es_select_changed;
+}Empyrean_Data;
 
 typedef struct{
     Basic_config config;
+    uint32_t total_dev;
     struct{    //这么包一下仅仅是为了好区分
         States state;
         Key_data keys;
+        uint32_t check_dhcp_callback_tictok_ID; //目前只有这个任务会需要结束自己
     };
     struct{
         void (*state_go) (States);
@@ -122,9 +140,13 @@ typedef struct{
         void (*state_server)(void);
         void (*on_error) (const char*);
     };
+    union {//运行状态相关参数，切换时不保留 //写成联合体仅仅为了省内存
+        Empyrean_Data ES;
+    }su;//state_union
     App_dev_desc devs[10];
 }App_info;
 
 extern App_info This;
+extern const Dev_desc devDesc[];
 
 #endif //RS_DATASTRUCT_H

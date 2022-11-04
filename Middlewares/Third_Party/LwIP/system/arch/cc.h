@@ -42,8 +42,8 @@ typedef int sys_prot_t;
 
 #if defined (__GNUC__) & !defined (__CC_ARM)
 
-//#define LWIP_TIMEVAL_PRIVATE 0
-//#include <sys/time.h>
+#define LWIP_TIMEVAL_PRIVATE 0
+#include <sys/time.h>
 
 #endif
 

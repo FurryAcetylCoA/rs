@@ -10,6 +10,19 @@
 #include "lcd_gxct.h"
 #include "sensor.h"
 
+const Dev_desc devDesc[]={
+        {.name="Air Temp&Humidity",.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2.factor=10,.data2.is_signed=1},
+        {.name="CO2"              ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
+        {.name="Soil Conductance" ,.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0}
+};
+
+
+
+
+
+
+
+
 static void App_init();
 static void State_go(States next_state);
 static void State_server(void);
@@ -81,7 +94,7 @@ void App_test_misc(){
     _TRAP;
 }
 static void App_init(){
-
+    This.total_dev=sizeof(devDesc)/sizeof (devDesc[0]);//必须要在这里取，因为siezof是编译期确定，而extern 是链接期确定
 }
 
 /**
@@ -139,7 +152,11 @@ static void State_go(States next_state){
             This.state=ST_Golden_Key;
             break;
         case ST_Empyrean:
+            LCD_clearLine(LINE1);
+            LCD_clearLine(LINE2);
+            LCD_clearLine(LINE3);
             EE_Load(&This);
+            memset(&This.su, 0, sizeof(This.su));
             This.state=ST_Empyrean;
             break;
         case ST_Limbo:

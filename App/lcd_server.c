@@ -10,6 +10,8 @@
 
 static char    lcd_buffer[32];
 
+static void lcd_server_empyrean();
+
 void lcd_server(){
     switch (This.state) {
         case ST_Genesis:
@@ -20,26 +22,56 @@ void lcd_server(){
             LCD_clearLine(LINE1);
             LCD_clearLine(LINE2);
             LCD_clearLine(LINE3);
-            LcdPrint(LINE2,"Read eeprom for config...%s",(This.config.eeprom_ready ==1?"OK":"Failed"));
-            break;
-        case ST_Silver_Key:
+            LcdPrint(LINE2,"Reading eeprom...%s",(This.config.eeprom_ready ==1?"OK":"Failed"));
+            HAL_Delay(1000);//这里等一会应该没关系
             LCD_clearLine(LINE1);
             LCD_clearLine(LINE2);
             LCD_clearLine(LINE3);
-            LCD_ShowStringLine(LINE2,"Ready for reading");
+            break;
+        case ST_Silver_Key:
+            LCD_ShowStringLine(LINE2,"Ready for reading        ");
             LCD_ShowStringLine(LINE3,"Press any key to continue");
             break;
         case ST_Earth:
             break;
         case ST_Golden_Key:
-            LCD_ShowStringLine(LINE2,"Ready for registering");
-            LCD_ShowStringLine(LINE3,"Press any key to continue");\
+            LCD_clearLine(LINE1);
+            //LCD_clearLine(LINE2);//这里tmd会闪
+            //LCD_clearLine(LINE3);
+            LCD_ShowStringLine(LINE2,"Ready for registering     ");
+            LCD_ShowStringLine(LINE3,"Press any key to continue ");
             break;
         case ST_Empyrean:
-            LCD_ShowStringLine(LINE1,"");
+            lcd_server_empyrean();
             break;
         default:
             _TRAP;
+    }
+
+}
+
+static void lcd_server_empyrean(){
+    if(This.su.ES.es_state == ES_Devname) {
+        LcdPrint(LINE1,"%d device registered",This.config.dev_count);
+        LcdPrint(LINE2,"Now registering %d device",This.config.dev_count+1);
+        LcdPrint(LINE3,"Please select device type:");
+        if(This.su.ES.es_select_changed == 1){
+            This.su.ES.es_select_changed = 0;
+            LCD_clearLine(LINE4);
+        }
+        LCD_push(GREEN);
+        LcdPrint(LINE4,"###%s",devDesc[This.su.ES.es_select].name);
+        LCD_pop();
+
+        LcdPrint(LINE8,"Up/Down:select");
+        LcdPrint(LINE9,"Right:enter");
+    }else if(This.su.ES.es_state == ES_Conform){
+        LcdPrint(LINE1,"For %dth device.");
+        LcdPrint(LINE2,"You select:",This.config.dev_count+1);
+        LCD_push(GREEN);
+        LcdPrint(LINE3,"###%s",devDesc[This.su.ES.es_select].name);
+        LCD_pop();
+        LcdPrint(LINE4,"Data1:%s  Data2:%s","YES",(devDesc[This.su.ES.es_select].data2.exist == 1?"YES":"NO"));
     }
 
 }
