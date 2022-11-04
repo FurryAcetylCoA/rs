@@ -158,6 +158,7 @@ static void fill_crc16(Sens_buffer *buf, uint8_t sized){
 */
 static bool check_03(uint8_t **buf, uint32_t size){
     //先处理开头有乱码的情况
+    //编码说明：buf用之前一定要先解一次指针
     crc_t  crc;
     crc.U = crc16(*buf+1,size - 2);//从第二位开始计算crc。然后和预期的位比较
     if (crc.Lo == (*buf+1)[size - 2] && crc.Hi == (*buf+1)[size - 1]){
