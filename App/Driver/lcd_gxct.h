@@ -21,6 +21,7 @@ typedef enum{
 
 void LCD_ShowStringLine(LCD_Line line, const char *p);
 void LCD_clearLine(LCD_Line line);
+void LCD_clearLineAll();
 void LCD_push(uint32_t new_background);
 void LCD_pop();
 #endif  //__LCD_GXCT_H__
