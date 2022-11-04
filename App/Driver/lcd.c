@@ -314,19 +314,6 @@ void LCD_Fast_DrawPoint(u16 x,u16 y,u32 color)
     LCD->LCD_RAM=color; 
 }
 
-//SSD1963 背光设置
-//pwm:背光等级,0~100.越大越亮.
-void LCD_SSD_BackLightSet(u8 pwm)
-{	
-	LCD_WR_REG(0xBE);	//配置PWM输出
-	LCD_WR_DATA(0x05);	//1设置PWM频率
-	LCD_WR_DATA(pwm*2.55);//2设置PWM占空比
-	LCD_WR_DATA(0x01);	//3设置C
-	LCD_WR_DATA(0xFF);	//4设置D
-	LCD_WR_DATA(0x00);	//5设置E
-	LCD_WR_DATA(0x00);	//6设置F
-}
-
 //设置LCD显示方向
 //dir:0,竖屏；1,横屏
 void LCD_Display_Dir(u8 dir)
@@ -487,8 +474,8 @@ void LCD_Init(u32 color)
 	 
 		LCD_WR_REG(0xCF);  
 		LCD_WR_DATA(0x00); 
-		LCD_WR_DATA(0xC1); 
-		LCD_WR_DATA(0X30); 
+		LCD_WR_DATA(0xC1);
+		LCD_WR_DATA(0X30);
 		LCD_WR_REG(0xED);  
 		LCD_WR_DATA(0x64); 
 		LCD_WR_DATA(0x03); 
@@ -523,9 +510,10 @@ void LCD_Init(u32 color)
 		LCD_WR_REG(0x3A);   
 		LCD_WR_DATA(0x55); 
 		LCD_WR_REG(0xB1);   
-		LCD_WR_DATA(0x00);   
-		LCD_WR_DATA(0x1A); 
-		LCD_WR_REG(0xB6);    // Display Function Control 
+		LCD_WR_DATA(0x00);
+        LCD_WR_DATA(0x1A);
+        //LCD_WR_DATA(0x10);
+        LCD_WR_REG(0xB6);    // Display Function Control
 		LCD_WR_DATA(0x0A); 
 		LCD_WR_DATA(0xA2); 
 		LCD_WR_REG(0xF2);    // 3Gamma Function Disable 
@@ -584,7 +572,7 @@ void LCD_Init(u32 color)
 	FSMC_Bank1E->BWTR[6]&=~(0XF<<0);//地址建立时间(ADDSET)清零
 	FSMC_Bank1E->BWTR[6]&=~(0XF<<8);//数据保存时间清零
 	FSMC_Bank1E->BWTR[6]|=3<<0;     //地址建立时间(ADDSET)为4个HCLK =24ns
-	FSMC_Bank1E->BWTR[6]|=2<<8; //数据保存时间(DATAST)为6ns*3个HCLK=18ns
+	FSMC_Bank1E->BWTR[6]|=2<<8;     //数据保存时间(DATAST)为6ns*3个HCLK=18ns
 	
 	
 	LCD_Display_Dir(1);		//默认横屏
@@ -617,11 +605,11 @@ void LCD_Fill(u16 sx,u16 sy,u16 ex,u16 ey,u32 color)
 {          
 	u16 i,j;
 	u16 xlen=0; 
-	xlen=ex-sx+1;	 
+	xlen=ex-sx+1;
 	for(i=sy;i<=ey;i++)
 	{
-		LCD_SetCursor(sx,i);      				//设置光标位置 
-		LCD_WriteRAM_Prepare();     			//开始写入GRAM	  
+		LCD_SetCursor(sx,i);      				//设置光标位置
+		LCD_WriteRAM_Prepare();     			//开始写入GRAM
         for (j = 0; j < xlen; j++)
         {
             LCD->LCD_RAM=color;     //设置光标位置
@@ -762,18 +750,21 @@ void LCD_ShowChar(u16 x,u16 y,u8 num,u8 size,u8 mode)
 		else if(size==24)temp=asc2_2412[num][t];	//调用2412字体
 		else if(size==32)temp=asc2_3216[num][t];	//调用3216字体
 		else return;								//没有的字库
-		for(t1=0;t1<8;t1++)
+        //LCD_SetCursor(y,x);
+        //LCD_WriteRAM_Prepare();
+        for(t1=0;t1<8;t1++)
 		{			    
 			if(temp&0x80)LCD_Fast_DrawPoint(x,y,POINT_COLOR);
 			else if(mode==0)LCD_Fast_DrawPoint(x,y,BACK_COLOR);
+            //LCD->LCD_RAM=(temp&0x80)?POINT_COLOR:BACK_COLOR;
 			temp<<=1;
 			y++;
-			if(y>=lcddev.height+1)return;		//超区域了
+            if(y>=lcddev.height+1)return;		//超区域了
 			if((y-y0)==size)
 			{
 				y=y0;
 				x++;
-				if(x>=lcddev.width)return;	//超区域了
+				if(x>=lcddev.width+1)return;	//超区域了
 				break;
 			}
 		}
