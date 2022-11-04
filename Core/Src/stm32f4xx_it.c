@@ -43,8 +43,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-static uint32_t  t10msCounter,t200msCounter;
-uint32_t  t10ms,t200ms;
+static uint32_t  t10msCounter,t100msCounter;
+uint32_t  t10ms,t100ms;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -199,10 +199,10 @@ void SysTick_Handler(void)
       t10msCounter=0;
       t10ms=1;
   }
-  t200msCounter++;
-  if(t200msCounter>=200){
-      t200msCounter=0;
-      t200ms=1;
+  t100msCounter++;
+  if(t100msCounter>=100){
+      t100msCounter=0;
+      t100ms=1;
   }
   /* USER CODE END SysTick_IRQn 1 */
 }

@@ -15,7 +15,7 @@ static void      Init(void);
 typedef struct{
 
     uint32_t  ID;
-    void      (*Payload)(uint32_t ID);
+    void      (*Payload)(void);
     uint32_t  Period;    //不变
     uint32_t  Counter;   //每轮改变
     uint32_t  Tock;      //标志位，当其为1时，会在tock周期中被执行
@@ -68,7 +68,7 @@ static void tock  (void){
         p=&task_list[i];
         if(p->ID != Task_Empty){
             if(p->Tock == 1){
-                p->Payload(p->ID);
+                p->Payload();
                 if(p->OneShoot){
                     p->ID=Task_Empty;
                 }
@@ -105,6 +105,7 @@ static void  Remove(uint32_t ID){
         }
     }
 }
+
 static void      Wipe(void){
     int i;
     Task *p;

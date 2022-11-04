@@ -13,12 +13,12 @@ typedef struct {
     void      (*tick)   (void);
     void      (*tock)   (void);
     void      (*Remove) (uint32_t);
-    uint32_t  (*Add)    (void(*)(uint32_t),uint32_t,_Bool OneShoot);
+    uint32_t  (*Add)    (void(*)(),uint32_t,_Bool OneShoot);
     void      (*Init)   (void);
     void      (*Wipe)   (void);
 }TicTok;
 
 extern TicTok tictok;
-//todo：加入定时器
+
 
 #endif //RS_TICTOK_H
