@@ -93,7 +93,7 @@ sens_ErrCode sens_GetVal(Sens_dev_desc *dev){
 
     if (check_03((uint8_t **) &pprxbuf, 3 + sens_buffer.withNoLen.dataLo * 2 + 2) != true){
         //这个函数会试图让pprxbuf指向rxbuf有效部分的开头
-        _TRAP;
+        //_TRAP;
         //有时候会进到这里，得加一个带延迟的重试
         return sens_failed_crc;
     }

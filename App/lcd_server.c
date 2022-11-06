@@ -35,11 +35,10 @@ void lcd_server(){
         case ST_Earth:
             break;
         case ST_Golden_Key:
-            LCD_clearLine(LINE1);
             //LCD_clearLine(LINE2);//’‚¿Ôtmdª·…¡
             //LCD_clearLine(LINE3);
-            LCD_ShowStringLine(LINE2,"Ready for registering     ");
-            LCD_ShowStringLine(LINE3,"Press any key to continue ");
+            LCD_ShowStringLine(LINE3,"Ready for registering     ");
+            LCD_ShowStringLine(LINE4,"Press any key to continue ");
             break;
         case ST_Empyrean:
             lcd_server_empyrean();
@@ -66,12 +65,24 @@ static void lcd_server_empyrean(){
         LcdPrint(LINE8,"Up/Down:select");
         LcdPrint(LINE9,"Right:enter");
     }else if(This.su.ES.es_state == ES_Conform){
-        LcdPrint(LINE1,"For %dth device.");
-        LcdPrint(LINE2,"You select:",This.config.dev_count+1);
+        LcdPrint(LINE1,"For %dth device.",This.config.dev_count+1);
+        LcdPrint(LINE2,"You select:");
         LCD_push(GREEN);
         LcdPrint(LINE3,"###%s",devDesc[This.su.ES.es_select].name);
         LCD_pop();
-        LcdPrint(LINE4,"Data1:%s  Data2:%s","YES",(devDesc[This.su.ES.es_select].data2.exist == 1?"YES":"NO"));
+        LcdPrint(LINE4,"Data1: %s   Data2: %s","YES",(devDesc[This.su.ES.es_select].data2.exist == 1?"YES":"NO"));
+        LcdPrint(LINE6,"Connect ONLY this device");
+        LcdPrint(LINE7,"Press right to register it");
+        LcdPrint(LINE8,"Or press left to cancel");
+    }else if (This.su.ES.es_state == ES_Programing){
+        LcdPrint(LINE1,"Programming the device");
+        LcdPrint(LINE2,"With address: %x",This.config.dev_count+1);
+        if (This.su.ES.es_programing_step < 1){ return; }
+        LcdPrint(LINE3,"Programming ... Done");
+        if (This.su.ES.es_programing_step < 2){ return; }
+        LcdPrint(LINE4,"Testing");
+        LcdPrint(LINE5,"D1:%ld D2:%ld",This.devs[This.config.dev_count].data1,This.devs[This.config.dev_count].data2);
+
     }
 
 }

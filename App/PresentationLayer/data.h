@@ -9,8 +9,9 @@
 #include "App.h"
 
 typedef struct {
-    void (*Poll)(uint32_t);
+    void (*Poll)(void);
     void (*Pollall)(void);
+    void (*PollOne)(uint8_t);
 }S_Data;
 
 extern S_Data s_data;

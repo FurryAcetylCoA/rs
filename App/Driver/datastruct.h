@@ -26,7 +26,8 @@ typedef enum{
 
 typedef enum{
     ES_Devname =0, //初始状态
-    ES_Conform
+    ES_Conform,
+    ES_Programing
 }Empyrean_States;
 /////////////////////////////////
 //           STRUCT            //
@@ -96,6 +97,7 @@ typedef struct{
 typedef struct{
     Sens_data_struct data1;
     Sens_data_struct data2;
+    uint8_t inst_sized;
     uint8_t name[32];
 }Dev_desc;
 
@@ -124,11 +126,12 @@ typedef struct{
     Empyrean_States es_state;
     uint8_t es_select;
     uint8_t es_select_changed;
+    uint8_t es_programing_step;
 }Empyrean_Data;
 
 typedef struct{
     Basic_config config;
-    uint32_t total_dev;
+    uint32_t total_dev; //这个是程序里一共描述了多少种设备
     struct{    //这么包一下仅仅是为了好区分
         States state;
         Key_data keys;

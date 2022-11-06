@@ -9,6 +9,18 @@ void static key_services_golden_key();
 void static key_services_silver_key();
 void static key_services_empyrean();
 
+/* ∞¥º¸≈≈¡–
+ * ©∞©§©§©§©§©¥
+ * ©¶RST ©¶
+ * ©∏©§©§©§©§©º
+ * ©∞©§©§©§©§©¥
+ * ©¶KEY2©¶
+ * ©¿©§©§©§©§©‡©§©§©§©§©¥
+ * ©¶KEY1©¶KEY3©¶
+ * ©¿©§©§©§©§©‡©§©§©§©§©º
+ * ©¶KEY0©¶
+ * ©∏©§©§©§©§©º
+ */
 
 void key_services(){
     switch (This.state) {
@@ -54,7 +66,14 @@ void static key_services_empyrean(){
             This.su.ES.es_state = ES_Conform;
             LCD_clearLineAll();
         }
-
+    }else if (This.su.ES.es_state == ES_Conform){
+        if (This.keys.key1 == 1) {//cancel
+            This.su.ES.es_state = ES_Devname;
+            LCD_clearLineAll();
+        }else if (This.keys.key3 == 1){//enter
+            This.su.ES.es_state = ES_Programing;
+            LCD_clearLineAll();
+        }
     }
 
 }

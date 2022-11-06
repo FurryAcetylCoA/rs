@@ -11,22 +11,21 @@
 #include "sensor.h"
 
 const Dev_desc devDesc[]={
-        {.name="Air Temp&Humidity",.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2.factor=10,.data2.is_signed=1},
-        {.name="CO2"              ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
-        {.name="Soil Conductance" ,.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0}
+        {.name="Air Temp&Humidity",.inst_sized=0 ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2.factor=10,.data2.is_signed=1},
+        {.name="CO2"              ,.inst_sized=0 ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
+        {.name="Soil Conductance" ,.inst_sized=0 ,.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0}
 };
 
 
 
-
-
-
-
-
+static void ST_Empyrean_Program_dev();
 static void App_init();
 static void State_go(States next_state);
 static void State_server(void);
 static void on_error (const char*);
+
+
+
 App_info This={
         .init     = App_init,
         .state_go = State_go,
@@ -112,8 +111,14 @@ static void State_server(){
                 }else{
                     State_go(ST_Golden_Key);
                 }
+            }break;
+        case ST_Empyrean:
+            if (This.su.ES.es_state == ES_Programing){
+                ST_Empyrean_Program_dev();
             }
-
+            break;
+        default:
+            break;
     }
 }
 /**
@@ -134,12 +139,7 @@ static void State_go(States next_state){
         case ST_saint_peter:
             EE_Load(&This);//读入EEPROM配置
             This.state=ST_saint_peter;
-            LCD_clearLine(LINE1);
-            LCD_clearLine(LINE2);
-            LCD_clearLine(LINE3);
-            LCD_clearLine(LINE4);
-            LCD_clearLine(LINE5);
-            LCD_clearLine(LINE6);
+            LCD_clearLineAll();
             break;
         case ST_Earth:
             //填充所有数据，然后注册数据中间件轮询到时钟中心
@@ -152,9 +152,7 @@ static void State_go(States next_state){
             This.state=ST_Golden_Key;
             break;
         case ST_Empyrean:
-            LCD_clearLine(LINE1);
-            LCD_clearLine(LINE2);
-            LCD_clearLine(LINE3);
+            LCD_clearLineAll();
             EE_Load(&This);
             memset(&This.su, 0, sizeof(This.su));
             This.state=ST_Empyrean;
@@ -168,6 +166,48 @@ static void State_go(States next_state){
 
     }
 }
+
+//与注册功能相关的过程
+//根据当前的选择，填充一个设备描述符
+//然后根据当前步骤数，逐一进行：
+//   0）描述符产生与sens_SetAddr调用
+//   1）尝试通过s_data.PollOne读取
+//   2）读取成功 ——> 修改dev_count & 写入EEPROM
+//控制步骤数的变量在es_programing_step中
+static void ST_Empyrean_Program_dev(){
+    App_dev_desc   *ndev = &This.devs[This.config.dev_count];
+    switch (This.su.ES.es_programing_step) {
+        case 0:{
+
+            Dev_desc const *ddev = &devDesc[This.su.ES.es_select];
+
+            ndev->sens_desc.inst_sized = ddev->inst_sized;
+            memcpy(ndev->name,ddev->name, strlen((const char*)ddev->name));
+            ndev->sens_desc.data1.factor      = ddev->data1.factor;
+            ndev->sens_desc.data1.is_signed   = ddev->data1.is_signed;
+            ndev->sens_desc.data1.mult_or_div = ddev->data1.mult_or_div;
+            if (ddev->data2.exist == 1){
+                ndev->sens_desc.data2.exist     = 1;
+                ndev->sens_desc.data2.factor    = ddev->data2.factor;
+                ndev->sens_desc.data2.is_signed = ddev->data2.is_signed;
+            }
+            sens_SetAddr(&ndev->sens_desc,This.config.dev_count+1);
+        }   This.su.ES.es_programing_step++;
+            break;
+        case 1:
+            s_data.PollOne(This.config.dev_count +1 -1);
+            This.su.ES.es_programing_step++;
+
+        case 2:
+            break;
+        default:
+            break;
+
+    }
+}
+
+
+
 static void on_error (const char* err){
     This.state_go(ST_Limbo);
     LCD_push(RED);
