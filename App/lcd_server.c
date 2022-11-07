@@ -5,6 +5,8 @@
 #include "lcd_server.h"
 #include "lcd_gxct.h"
 #include "stdio.h"
+#include "data.h"
+
 #define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
                   LCD_ShowStringLine(_LINE_,lcd_buffer);}while(0)
 
@@ -80,9 +82,12 @@ static void lcd_server_empyrean(){
         if (This.su.ES.es_programing_step < 1){ return; }
         LcdPrint(LINE3,"Programming ... Done");
         if (This.su.ES.es_programing_step < 2){ return; }
-        LcdPrint(LINE4,"Testing");
-        LcdPrint(LINE5,"D1:%ld D2:%ld",This.devs[This.config.dev_count].data1,This.devs[This.config.dev_count].data2);
-
+        LcdPrint(LINE4,"Test read result");
+        s_data.Print(lcd_buffer,This.config.dev_count);//这种情况
+        LCD_ShowStringLine(LINE5,lcd_buffer);
+        LcdPrint(LINE6,"Press right if OK");
+        LcdPrint(LINE7,"Press up to try again");
+        LcdPrint(LINE8,"Press left to go back");
     }
 
 }

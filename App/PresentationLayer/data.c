@@ -4,19 +4,22 @@
 
 #include "data.h"
 #include "sensor.h"
+#include "stdio.h"
 
 
 static void sdata_Poll(uint32_t current_poll);
 static void sdata_PollOne(uint8_t num);
 static void sdata_Poll_Pub();
 static void sdata_PollAll();
+static void sdata_Print(char* buf,uint8_t num);
 
 static uint32_t current_poll_pub;
 
 S_Data s_data={
         .Poll = sdata_Poll_Pub,
         .Pollall = sdata_PollAll,
-        .PollOne = sdata_PollOne
+        .PollOne = sdata_PollOne,
+        .Print   = sdata_Print
 };
 
 /**
@@ -55,7 +58,7 @@ static void sdata_Poll_Pub(){
 static void sdata_Poll(uint32_t current_poll){
     sens_ErrCode ret= sens_GetVal(&This.devs[current_poll].sens_desc);
     if (ret == sens_failed_crc){ //偶尔会发生这种事情，等一会再重试一下
-        HAL_Delay(1000);
+        HAL_Delay(2000);
         ret= sens_GetVal(&This.devs[current_poll].sens_desc);
         if(ret == sens_failed_crc){
             _TRAP;
@@ -68,7 +71,7 @@ static void sdata_Poll(uint32_t current_poll){
     ///符号控制///
     if(This.devs[current_poll].sens_desc.data1.is_signed == 1){
         //对于有符号数，要解码（todo：int32是不是自己就能解了。得试试）
-        _TRAP;
+        //_TRAP;
         if((uint16_t)This.devs[current_poll].sens_desc.data1_raw >= 0x8000 ) {
             data1_temp = 0xFFFF - (uint16_t) This.devs[current_poll].sens_desc.data1_raw + 1;
             data1_temp = -1 * data1_temp;
@@ -107,6 +110,25 @@ static void sdata_Poll(uint32_t current_poll){
     This.devs[current_poll].data1 = data1_temp;
 
 
+}
+/**
+ * @brief This function is called when upper layer want to display current
+ * data from sensor. It formats the data according to the structure specified
+ * in the Dev_desc
+ *
+ * @param buf: 调用方分配的空间，至少26字节
+ * @param num: 生成关于哪个传感器的数据格式（以App_dev_desc devs[]索引计）
+ *
+**/
+static void sdata_Print(char *buf, uint8_t num){
+    App_dev_desc *dev = &This.devs[num];
+    const Dev_desc *ndev = &devDesc[dev->sens_desc.name_index];
+
+    if (dev->sens_desc.data2.exist == 1){
+        snprintf(buf,26,"data1:%ld%s data2:%ld%s",dev->data1,ndev->data1_unit,dev->data2,ndev->data2_unit);
+    }else{
+        snprintf(buf,26,"data1:%ld%s",dev->data1,ndev->data1_unit);
+    }
 }
 
 /**

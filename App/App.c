@@ -10,10 +10,10 @@
 #include "lcd_gxct.h"
 #include "sensor.h"
 
-const Dev_desc devDesc[]={
-        {.name="Air Temp&Humidity",.inst_sized=0 ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2.factor=10,.data2.is_signed=1},
-        {.name="CO2"              ,.inst_sized=0 ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
-        {.name="Soil Conductance" ,.inst_sized=0 ,.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0}
+const Dev_desc devDesc[]={                  //为了方便字库的操作。用双引号代替°
+        {.name="Air Temp&Humidity",.inst_sized=0,.data1_unit="\"C"    ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2_unit="%RH",.data2.factor=10,.data2.is_signed=1},
+        {.name="CO2"              ,.inst_sized=0,.data1_unit="ppm"  ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
+        {.name="Soil Conductance" ,.inst_sized=0,.data1_unit="mS/cm",.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0}
 };
 
 
@@ -180,7 +180,7 @@ static void ST_Empyrean_Program_dev(){
         case 0:{
 
             Dev_desc const *ddev = &devDesc[This.su.ES.es_select];
-
+            ndev->sens_desc.name_index = This.su.ES.es_select;
             ndev->sens_desc.inst_sized = ddev->inst_sized;
             memcpy(ndev->name,ddev->name, strlen((const char*)ddev->name));
             ndev->sens_desc.data1.factor      = ddev->data1.factor;
@@ -197,8 +197,9 @@ static void ST_Empyrean_Program_dev(){
         case 1:
             s_data.PollOne(This.config.dev_count +1 -1);
             This.su.ES.es_programing_step++;
-
+            break;
         case 2:
+
             break;
         default:
             break;

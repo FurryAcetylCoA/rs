@@ -95,9 +95,11 @@ typedef struct{
 }Sens_dev_desc;// 数据链路级传感器描述符
 
 typedef struct{
-    Sens_data_struct data1;
-    Sens_data_struct data2;
+    Sens_data_struct data1; //其实有name_index就不需要这俩来保存数据处理方式了
+    Sens_data_struct data2; //但是我懒得改了
     uint8_t inst_sized;
+    uint8_t data1_unit[6];
+    uint8_t data2_unit[6];
     uint8_t name[32];
 }Dev_desc;
 
