@@ -55,6 +55,8 @@ extern uint8_t errflag[64];
 #define _TRAP errflag=__FILE__ __LINE__ '\0'
 #endif
 
+#define lenof(x) sizeof((x))/sizeof((x[0]))
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

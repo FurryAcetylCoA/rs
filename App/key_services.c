@@ -72,7 +72,32 @@ void static key_services_empyrean(){
             LCD_clearLineAll();
         }else if (This.keys.key3 == 1){//enter
             This.su.ES.es_state = ES_Programing;
+            This.su.ES.es_programing_step = 0;
             LCD_clearLineAll();
+        }
+    }else if (This.su.ES.es_state == ES_Programing){
+        if(This.su.ES.es_programing_step < 2 ){
+            if(This.keys.key2 == 1){  //try again
+                This.su.ES.es_programing_step = 0;
+            }else if(This.keys.key1 == 1){// back
+                This.su.ES.es_state = ES_Devname;
+            }else if(This.keys.key3 == 1){ // OK
+                This.config.dev_count += 1;
+                This.su.ES.es_state = ES_Yet_Another;
+                LCD_clearLineAll();
+                EE_Store(&This);
+            }
+        }
+    }else if (This.su.ES.es_state == ES_Yet_Another){
+        if(This.keys.key2 == 1){ //Add another
+            This.state_go(ST_Empyrean);
+        }else if(This.keys.key3 == 1){ // Exit
+            This.state_go(ST_Earth);
+        }
+
+    }else if (This.su.ES.es_state == ES_Full){
+        if(This.keys.U != 0){ //既然都full了 那设备列表必然有内容
+            This.state_go(ST_Earth);
         }
     }
 
