@@ -152,7 +152,8 @@ static void fill_crc16(Sens_buffer *buf, uint8_t sized){
 * Given that chances of 485 receiving an extra byte at the beginning are high
 * This function will try to parse it in many ways. (Using crc checksum)
 * And unify it if possible
-* @param buf: a pointer that point to rx buffer (C没有传引用这里简直扭曲得要死）
+* @param buf: a pointer that point to rx buffer. It will be set to the real
+*             start of the rx payload's head if possible
 * @param size: expected size of rx buffer (include checksum and header)
 * @retval true: successfully unify; false: unable to unify rx buffer
 */
@@ -168,7 +169,7 @@ static bool check_03(uint8_t **buf, uint32_t size){
     }
     //再处理开头直接就是数据的情况
     crc.U = crc16(*buf,size - 2);
-    if (crc.Lo == (*buf+1)[size - 2] && crc.Hi == (*buf+1)[size - 1]){
+    if (crc.Lo == (*buf)[size - 2] && crc.Hi == (*buf)[size - 1]){
         //crc确实符合，这说明确实是开头就是数据，并且后面都正常
         //不调整rx指针
         return true;

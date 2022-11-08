@@ -58,7 +58,7 @@ static void sdata_Poll_Pub(){
 static void sdata_Poll(uint32_t current_poll){
     sens_ErrCode ret= sens_GetVal(&This.devs[current_poll].sens_desc);
     if (ret == sens_failed_crc){ //偶尔会发生这种事情，等一会再重试一下
-        HAL_Delay(2000);
+        HAL_Delay(1000);
         ret= sens_GetVal(&This.devs[current_poll].sens_desc);
         if(ret == sens_failed_crc){
             _TRAP;
