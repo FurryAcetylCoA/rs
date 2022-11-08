@@ -5,10 +5,12 @@
 #ifndef RS_DATASTRUCT_H
 #define RS_DATASTRUCT_H
 #include "stm32f4xx_hal.h"
+
 /////////////////////////////////
-//            ENUM             //
+//       CONST    DEFINE       //
 /////////////////////////////////
 
+#define MAX_DEV_COUNT 10
 
 
 /////////////////////////////////
@@ -27,7 +29,9 @@ typedef enum{
 typedef enum{
     ES_Devname =0, //初始状态
     ES_Conform,
-    ES_Programing
+    ES_Programing,
+    ES_Yet_Another,  //已经完成一轮注册，是否要再添加设备
+    ES_Full //满了 不能再加设备了
 }Empyrean_States;
 /////////////////////////////////
 //           STRUCT            //
@@ -61,7 +65,6 @@ typedef __PACKED_STRUCT{
     uint8_t inst_and_addr;
     uint8_t data_struct;
     uint8_t name_index;
-    // uint8_t not_used;
 
 }E2PRom_dev;
 
@@ -88,15 +91,15 @@ typedef struct{
     uint8_t  address;
     uint8_t  inst_sized; //1:需要地址  0:不需要地址
     uint8_t name_index;
-    Sens_data_struct data1; //这俩描述了要如何处理raw数据
-    Sens_data_struct data2; //要是C支持柯里化函数，这里直接用委托就行了
+    Sens_data_struct data1; //这俩描述了要如何处理raw数据            //其实有name_index就不需要这俩来保存数据处理方式了
+    Sens_data_struct data2; //要是C支持柯里化函数，这里直接用委托就行了 //但是我懒得改了
     uint32_t  data1_raw;
     uint32_t  data2_raw;
 }Sens_dev_desc;// 数据链路级传感器描述符
 
 typedef struct{
-    Sens_data_struct data1; //其实有name_index就不需要这俩来保存数据处理方式了
-    Sens_data_struct data2; //但是我懒得改了
+    Sens_data_struct data1;
+    Sens_data_struct data2;
     uint8_t inst_sized;
     uint8_t data1_unit[6];
     uint8_t data2_unit[6];
@@ -107,7 +110,7 @@ typedef struct{
     Sens_dev_desc   sens_desc;
     int32_t  data1;
     int32_t  data2;
-    uint8_t  name[32];
+   // uint8_t  name[32];
 }App_dev_desc; // 应用级传感器描述符
 
 typedef struct {
@@ -124,12 +127,18 @@ typedef __PACKED_UNION {
     };
     uint32_t U;
 }Key_data;
+
 typedef struct{
     Empyrean_States es_state;
     uint8_t es_select;
     uint8_t es_select_changed;
     uint8_t es_programing_step;
 }Empyrean_Data;
+
+typedef struct {
+    uint8_t current_top; //当前最高行在devs中的索引
+    uint8_t buffer [MAX_DEV_COUNT][27];
+}Earth_Data;
 
 typedef struct{
     Basic_config config;
@@ -147,8 +156,9 @@ typedef struct{
     };
     union {//运行状态相关参数，切换时不保留 //写成联合体仅仅为了省内存
         Empyrean_Data ES;
+        Earth_Data    EA;
     }su;//state_union
-    App_dev_desc devs[10];
+    App_dev_desc devs[MAX_DEV_COUNT];
 }App_info;
 
 extern App_info This;

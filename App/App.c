@@ -14,7 +14,7 @@ const Dev_desc devDesc[]={                  //为了方便字库的操作。用双引号代替°
         {.name="Air Temp&Humidity",.inst_sized=0,.data1_unit="\"C"    ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2_unit="%RH",.data2.factor=10,.data2.is_signed=1},
         {.name="CO2"              ,.inst_sized=0,.data1_unit="ppm"  ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
         {.name="Soil Conductance" ,.inst_sized=0,.data1_unit="mS/cm",.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0}
-};
+};//请只在最后添加。否则会影响已有传感器
 
 
 
@@ -93,7 +93,7 @@ void App_test_misc(){
     _TRAP;
 }
 static void App_init(){
-    This.total_dev=sizeof(devDesc)/sizeof (devDesc[0]);//必须要在这里取，因为siezof是编译期确定，而extern 是链接期确定
+    This.total_dev=sizeof(devDesc)/sizeof (devDesc[0]);//必须要在这个文件里取，因为siezof是编译期确定，而extern 是链接期确定
 }
 
 /**
@@ -144,6 +144,7 @@ static void State_go(States next_state){
         case ST_Earth:
             //填充所有数据，然后注册数据中间件轮询到时钟中心
             s_data.Pollall();
+            memset(&This.su,0,sizeof(This.su));
             tictok.Add(s_data.Poll,1000,false);
             This.state=ST_Earth;
             break;
@@ -155,6 +156,9 @@ static void State_go(States next_state){
             LCD_clearLineAll();
             EE_Load(&This);
             memset(&This.su, 0, sizeof(This.su));
+            if(This.config.dev_count>=lenof(This.devs)){
+                This.su.ES.es_state = ES_Full;
+            }
             This.state=ST_Empyrean;
             break;
         case ST_Limbo:
@@ -182,7 +186,7 @@ static void ST_Empyrean_Program_dev(){
             Dev_desc const *ddev = &devDesc[This.su.ES.es_select];
             ndev->sens_desc.name_index = This.su.ES.es_select;
             ndev->sens_desc.inst_sized = ddev->inst_sized;
-            memcpy(ndev->name,ddev->name, strlen((const char*)ddev->name));
+            //memcpy(ndev->name,ddev->name, strlen((const char*)ddev->name));
             ndev->sens_desc.data1.factor      = ddev->data1.factor;
             ndev->sens_desc.data1.is_signed   = ddev->data1.is_signed;
             ndev->sens_desc.data1.mult_or_div = ddev->data1.mult_or_div;
