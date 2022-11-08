@@ -6,7 +6,7 @@
 
 static void      tick   (void);
 static void      tock   (void);
-static uint32_t  Add    (void(*)(uint32_t),uint32_t,_Bool);
+static uint32_t  Add    (void(*)(),uint32_t,_Bool);
 static void      Remove (uint32_t);
 static void      Wipe(void);
 static void      Init(void);
@@ -77,12 +77,12 @@ static void tock  (void){
     }
 }
 
-uint32_t Add (void(*Payload)(uint32_t),uint32_t time,_Bool OneShoot){ //时间单位是10ms
+uint32_t Add (void(*Payload)(),uint32_t time,_Bool OneShoot){ //时间单位是1ms
     int i;
     Task *p;
     for(i=0;i<sizeof(task_list)/sizeof(task_list[0]);i++){
         p=&task_list[i];
-        if(p->ID==Task_Empty){
+        if(p->ID==Task_Empty || p->Payload == Payload){
             p->ID=i;
             p->Counter=0;
             p->Period=time;
