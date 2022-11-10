@@ -1,0 +1,36 @@
+Index: STM32F407ZETX_FLASH.ld
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>GBK
+===================================================================
+diff --git a/STM32F407ZETX_FLASH.ld b/STM32F407ZETX_FLASH.ld
+--- a/STM32F407ZETX_FLASH.ld	(revision 84057aaae0ea7b3587bc1eb21927cb263ebf7644)
++++ b/STM32F407ZETX_FLASH.ld	(date 1668081266169)
+@@ -48,6 +48,7 @@
+   CCMRAM    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 64K
+   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
+   FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 512K
++  SRAM     (rx)    : ORIGIN = 0x68000000,  LENGTH = 1024K
+ }
+ 
+ /* Sections */
+@@ -194,6 +195,19 @@
+     . = ALIGN(8);
+   } >RAM
+ 
++  /* SRAM added by xyl*/
++  .sram (NOLOAD):
++  {
++
++    . = ALIGN(4);
++      __SRAM_SYMBOLS = .;
++      *(.sram)
++      *(.sram*)
++      . = ALIGN(4);
++      __SRAM_SYMBOLS = .;
++
++  } >SRAM
++
+   /* Remove information from the compiler libraries */
+   /DISCARD/ :
+   {

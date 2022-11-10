@@ -33,6 +33,7 @@
 #include "lcd_server.h"
 #include "tictok.h"
 #include "key_services.h"
+#include "GUI.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +63,7 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart1;
 
 SRAM_HandleTypeDef hsram1;
+SRAM_HandleTypeDef hsram2;
 
 /* USER CODE BEGIN PV */
 
@@ -172,32 +174,17 @@ int main(void)
     //tcp_echoserver_init();
     printf("good "__TIME__"\n");
     //EE_wipe();
-    int ret =0;
-    //ret = EE_init();
-    //printf("%d\n",ret);
-    //HAL_I2C_DeInit(&hi2c1);
-    //HAL_I2C_Init(&hi2c1);
-    /*
-    httpc_connection_t httpc_settings= { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
-    httpc_state_t    * phttpc_state = NULL;
-    ip4_addr_t addr;
-    IP4_ADDR(&addr,192,168,3,3);
-    uint32_t InitTime= HAL_GetTick();
-    uint32_t Sent = 0;
-    uint8_t PostBuf[128];
-    httpc_settings.body_len=snprintf((char*)PostBuf,128,\
-    "{\"datastreams\": [{\"id\": \"temperature\",\"datapoints\": [{\"value\": \"27\"}]}]}");
-    httpc_settings.method = HTTPC_METHOD_POST;
-    httpc_settings.post_body=&(PostBuf);
-    */  //httpc
 
-    uint32_t Sent = 0;
-    uint32_t InitTime = HAL_GetTick() ;
     This.state = ST_Genesis;
     This.init();
     tictok.Init();
     LCD_Init(GRAYBLUE);
-
+    GUI_Init();
+    GUI_Clear();
+    GUI_SetFont(&GUI_Font20_ASCII);
+    GUI_DispStringHCenterAt("Hello sram!!",(LCD_GetXSize())/2, (LCD_GetYSize())/2);
+    //GUI_DispStringAt("Hello world!", (LCD_GetXSize())/2, (LCD_GetYSize())/2);
+    while(1);
     tictok.Add(lcd_server,1000,0);//把部分定期执行的放到时钟中心里，以增强异步性
 
     LcdPrint(LINE1,"hello Clion!2022");
@@ -239,12 +226,6 @@ int main(void)
   while (1)
   {
 		MX_LWIP_Process();
-		//目前选择的dhcp失败标记：4秒后state仍为0x06或
-		//正统方法：tries大于6
-		if(HAL_GetTick()-InitTime>8000 && Sent ==0){
-			//httpc_request_file(&addr,80,"/file.php",&httpc_settings,NULL,phttpc_state,&phttpc_state);
-			Sent=1;
-		}
         if(t10ms == 1){
             t10ms = 0;
         }
@@ -459,12 +440,12 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LCD_BL_GPIO_Port, LCD_BL_Pin, GPIO_PIN_RESET);
@@ -562,6 +543,40 @@ static void MX_FSMC_Init(void)
   ExtTiming.AccessMode = FSMC_ACCESS_MODE_A;
 
   if (HAL_SRAM_Init(&hsram1, &Timing, &ExtTiming) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+
+  /** Perform the SRAM2 memory initialization sequence
+  */
+  hsram2.Instance = FSMC_NORSRAM_DEVICE;
+  hsram2.Extended = FSMC_NORSRAM_EXTENDED_DEVICE;
+  /* hsram2.Init */
+  hsram2.Init.NSBank = FSMC_NORSRAM_BANK3;
+  hsram2.Init.DataAddressMux = FSMC_DATA_ADDRESS_MUX_DISABLE;
+  hsram2.Init.MemoryType = FSMC_MEMORY_TYPE_SRAM;
+  hsram2.Init.MemoryDataWidth = FSMC_NORSRAM_MEM_BUS_WIDTH_16;
+  hsram2.Init.BurstAccessMode = FSMC_BURST_ACCESS_MODE_DISABLE;
+  hsram2.Init.WaitSignalPolarity = FSMC_WAIT_SIGNAL_POLARITY_LOW;
+  hsram2.Init.WrapMode = FSMC_WRAP_MODE_DISABLE;
+  hsram2.Init.WaitSignalActive = FSMC_WAIT_TIMING_BEFORE_WS;
+  hsram2.Init.WriteOperation = FSMC_WRITE_OPERATION_ENABLE;
+  hsram2.Init.WaitSignal = FSMC_WAIT_SIGNAL_DISABLE;
+  hsram2.Init.ExtendedMode = FSMC_EXTENDED_MODE_DISABLE;
+  hsram2.Init.AsynchronousWait = FSMC_ASYNCHRONOUS_WAIT_DISABLE;
+  hsram2.Init.WriteBurst = FSMC_WRITE_BURST_DISABLE;
+  hsram2.Init.PageSize = FSMC_PAGE_SIZE_NONE;
+  /* Timing */
+  Timing.AddressSetupTime = 2;
+  Timing.AddressHoldTime = 15;
+  Timing.DataSetupTime = 3;
+  Timing.BusTurnAroundDuration = 0;
+  Timing.CLKDivision = 16;
+  Timing.DataLatency = 17;
+  Timing.AccessMode = FSMC_ACCESS_MODE_A;
+  /* ExtTiming */
+
+  if (HAL_SRAM_Init(&hsram2, &Timing, NULL) != HAL_OK)
   {
     Error_Handler( );
   }
