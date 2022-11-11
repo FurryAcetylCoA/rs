@@ -33,7 +33,9 @@
 #include "lcd_server.h"
 #include "tictok.h"
 #include "key_services.h"
-#include "GUI.h"
+
+#include "WM.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -69,7 +71,7 @@ SRAM_HandleTypeDef hsram2;
 
 uint8_t errstring[64];
 static char    lcd_buffer[32];
-
+WM_HWIN CreateFramewin(void);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -180,11 +182,15 @@ int main(void)
     tictok.Init();
     LCD_Init(GRAYBLUE);
     GUI_Init();
-    GUI_Clear();
+    //GUI_Clear();
+    CreateFramewin();
+    while(1){
+        GUI_Exec();
+    };
     GUI_SetFont(&GUI_Font20_ASCII);
-    GUI_DispStringHCenterAt("Hello sram!!",(LCD_GetXSize())/2, (LCD_GetYSize())/2);
+    GUI_DispStringHCenterAt("He0llo sram!!",(LCD_GetXSize())/2, (LCD_GetYSize())/2);
     //GUI_DispStringAt("Hello world!", (LCD_GetXSize())/2, (LCD_GetYSize())/2);
-    while(1);
+
     tictok.Add(lcd_server,1000,0);//把部分定期执行的放到时钟中心里，以增强异步性
 
     LcdPrint(LINE1,"hello Clion!2022");
