@@ -75,6 +75,8 @@ void Error_Handler(void);
 #define KEY0_GPIO_Port GPIOE
 #define KEY_UP_Pin GPIO_PIN_0
 #define KEY_UP_GPIO_Port GPIOA
+#define SENS_EN_Pin GPIO_PIN_13
+#define SENS_EN_GPIO_Port GPIOB
 #define LCD_BL_Pin GPIO_PIN_15
 #define LCD_BL_GPIO_Port GPIOB
 #define RS485_RE_Pin GPIO_PIN_8

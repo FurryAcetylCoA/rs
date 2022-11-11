@@ -105,19 +105,10 @@ sens_ErrCode sens_GetVal(Sens_dev_desc *dev){
 
     dev->data1_raw = ((uint32_t)pprxbuf[2 + 1 ] << 8) | \
                         (uint32_t)pprxbuf[2 + 1 +1];
-    /*if (dev->data1.factor != 1){
-        if(dev->data1.mult_or_div ==1){ //1：除法
-            dev->data1_raw /= dev->data1.factor;
-        }else {
-            dev->data1_raw *= dev->data1.factor;
-        }
-    }*/
+
     if(dev->data2.exist){
             dev->data2_raw = ((uint32_t)pprxbuf[2 + 1 + 2] << 8) | \
                         (uint32_t)pprxbuf[2 + 1 + 1 + 2];
-           /* if (dev->data2.factor != 1){ //第二数据只有除法
-                dev->data2_raw /= dev->data2.factor;
-            }*/
     }
 
     return sens_success;

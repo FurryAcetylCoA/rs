@@ -199,7 +199,10 @@ int main(void)
     LCD_Init(GRAYBLUE);
 
     tictok.Add(lcd_server,1000,0);//把部分定期执行的放到时钟中心里，以增强异步性
-
+    HAL_GPIO_WritePin(SENS_EN_GPIO_Port,SENS_EN_Pin,GPIO_PIN_RESET);
+    //HAL_Delay(10);
+   //
+   // HAL_GPIO_WritePin(SENS_EN_GPIO_Port,SENS_EN_Pin,GPIO_PIN_SET);
     LcdPrint(LINE1,"hello Clion!2022");
     LCD_push(BLUE);
     LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
@@ -467,7 +470,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LCD_BL_GPIO_Port, LCD_BL_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, SENS_EN_Pin|LCD_BL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
@@ -487,12 +490,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(KEY_UP_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_BL_Pin */
-  GPIO_InitStruct.Pin = LCD_BL_Pin;
+  /*Configure GPIO pins : SENS_EN_Pin LCD_BL_Pin */
+  GPIO_InitStruct.Pin = SENS_EN_Pin|LCD_BL_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_BL_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : RS485_RE_Pin */
   GPIO_InitStruct.Pin = RS485_RE_Pin;

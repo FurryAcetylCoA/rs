@@ -76,7 +76,7 @@ void static key_services_empyrean(){
             LCD_clearLineAll();
         }
     }else if (This.su.ES.es_state == ES_Programing){
-        if(This.su.ES.es_programing_step < 2 ){
+        if(This.su.ES.es_programing_step >= 2 ){
             if(This.keys.key2 == 1){  //try again
                 This.su.ES.es_programing_step = 0;
             }else if(This.keys.key1 == 1){// back

@@ -133,6 +133,10 @@ static void State_go(States next_state){
         return; //limbo 状态不允许移出
     }
     switch (next_state) {
+        case ST_Silver_Key:
+            This.state= ST_Silver_Key;
+
+            break;
         case ST_Genesis:
             _TRAP;
             break;
@@ -147,6 +151,7 @@ static void State_go(States next_state){
             memset(&This.su,0,sizeof(This.su));
             tictok.Add(s_data.Poll,1000,false);
             This.state=ST_Earth;
+            LCD_clearLineAll();
             break;
         case ST_Golden_Key:
             //进入设备注册
@@ -203,7 +208,7 @@ static void ST_Empyrean_Program_dev(){
             This.su.ES.es_programing_step++;
             break;
         case 2:
-
+            //nothing
             break;
         default:
             break;
