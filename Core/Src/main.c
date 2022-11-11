@@ -65,7 +65,6 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart1;
 
 SRAM_HandleTypeDef hsram1;
-SRAM_HandleTypeDef hsram2;
 
 /* USER CODE BEGIN PV */
 
@@ -181,16 +180,22 @@ int main(void)
     This.init();
     tictok.Init();
     LCD_Init(GRAYBLUE);
-    GUI_Init();
+   // GUI_Init();
     //GUI_Clear();
-    CreateFramewin();
-    while(1){
-        GUI_Exec();
-    };
-    GUI_SetFont(&GUI_Font20_ASCII);
-    GUI_DispStringHCenterAt("He0llo sram!!",(LCD_GetXSize())/2, (LCD_GetYSize())/2);
-    //GUI_DispStringAt("Hello world!", (LCD_GetXSize())/2, (LCD_GetYSize())/2);
+    //CreateFramewin();
+   // while(1){
+     //   GUI_Exec();
+    //};
 
+    //GUI_SetFont(&GUI_Font20_ASCII);
+    //GUI_DispStringHCenterAt("He0llo sram!!",(LCD_GetXSize())/2, (LCD_GetYSize())/2);
+    //GUI_DispStringAt("Hello world!", (LCD_GetXSize())/2, (LCD_GetYSize())/2);
+    LcdPrint(LINE1,"S1 ");
+    while(HAL_GPIO_ReadPin ( XPT2046_PENIRQ_GPIO_Port, XPT2046_PENIRQ_Pin) == GPIO_PIN_SET){}
+    LcdPrint(LINE2,"S2 ");
+    while(HAL_GPIO_ReadPin ( XPT2046_PENIRQ_GPIO_Port, XPT2046_PENIRQ_Pin) == GPIO_PIN_RESET){}
+    LcdPrint(LINE3,"S3 ");
+    while(1);
     tictok.Add(lcd_server,1000,0);//把部分定期执行的放到时钟中心里，以增强异步性
 
     LcdPrint(LINE1,"hello Clion!2022");
@@ -446,15 +451,21 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LCD_BL_GPIO_Port, LCD_BL_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(XPT2046_SPI_CS_GPIO_Port, XPT2046_SPI_CS_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, XPT2046_SPI_CLK_Pin|SENS_EN_Pin|LCD_BL_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(XPT2046_SPI_MOSI_GPIO_Port, XPT2046_SPI_MOSI_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
@@ -468,18 +479,45 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : XPT2046_SPI_CS_Pin */
+  GPIO_InitStruct.Pin = XPT2046_SPI_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(XPT2046_SPI_CS_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : KEY_UP_Pin */
   GPIO_InitStruct.Pin = KEY_UP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(KEY_UP_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LCD_BL_Pin */
-  GPIO_InitStruct.Pin = LCD_BL_Pin;
+  /*Configure GPIO pin : XPT2046_SPI_CLK_Pin */
+  GPIO_InitStruct.Pin = XPT2046_SPI_CLK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(XPT2046_SPI_CLK_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : XPT2046_PENIRQ_Pin XPT2046_SPI_MISO_Pin */
+  GPIO_InitStruct.Pin = XPT2046_PENIRQ_Pin|XPT2046_SPI_MISO_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : XPT2046_SPI_MOSI_Pin */
+  GPIO_InitStruct.Pin = XPT2046_SPI_MOSI_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LCD_BL_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(XPT2046_SPI_MOSI_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SENS_EN_Pin LCD_BL_Pin */
+  GPIO_InitStruct.Pin = SENS_EN_Pin|LCD_BL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : RS485_RE_Pin */
   GPIO_InitStruct.Pin = RS485_RE_Pin;
@@ -549,40 +587,6 @@ static void MX_FSMC_Init(void)
   ExtTiming.AccessMode = FSMC_ACCESS_MODE_A;
 
   if (HAL_SRAM_Init(&hsram1, &Timing, &ExtTiming) != HAL_OK)
-  {
-    Error_Handler( );
-  }
-
-  /** Perform the SRAM2 memory initialization sequence
-  */
-  hsram2.Instance = FSMC_NORSRAM_DEVICE;
-  hsram2.Extended = FSMC_NORSRAM_EXTENDED_DEVICE;
-  /* hsram2.Init */
-  hsram2.Init.NSBank = FSMC_NORSRAM_BANK3;
-  hsram2.Init.DataAddressMux = FSMC_DATA_ADDRESS_MUX_DISABLE;
-  hsram2.Init.MemoryType = FSMC_MEMORY_TYPE_SRAM;
-  hsram2.Init.MemoryDataWidth = FSMC_NORSRAM_MEM_BUS_WIDTH_16;
-  hsram2.Init.BurstAccessMode = FSMC_BURST_ACCESS_MODE_DISABLE;
-  hsram2.Init.WaitSignalPolarity = FSMC_WAIT_SIGNAL_POLARITY_LOW;
-  hsram2.Init.WrapMode = FSMC_WRAP_MODE_DISABLE;
-  hsram2.Init.WaitSignalActive = FSMC_WAIT_TIMING_BEFORE_WS;
-  hsram2.Init.WriteOperation = FSMC_WRITE_OPERATION_ENABLE;
-  hsram2.Init.WaitSignal = FSMC_WAIT_SIGNAL_DISABLE;
-  hsram2.Init.ExtendedMode = FSMC_EXTENDED_MODE_DISABLE;
-  hsram2.Init.AsynchronousWait = FSMC_ASYNCHRONOUS_WAIT_DISABLE;
-  hsram2.Init.WriteBurst = FSMC_WRITE_BURST_DISABLE;
-  hsram2.Init.PageSize = FSMC_PAGE_SIZE_NONE;
-  /* Timing */
-  Timing.AddressSetupTime = 2;
-  Timing.AddressHoldTime = 15;
-  Timing.DataSetupTime = 3;
-  Timing.BusTurnAroundDuration = 0;
-  Timing.CLKDivision = 16;
-  Timing.DataLatency = 17;
-  Timing.AccessMode = FSMC_ACCESS_MODE_A;
-  /* ExtTiming */
-
-  if (HAL_SRAM_Init(&hsram2, &Timing, NULL) != HAL_OK)
   {
     Error_Handler( );
   }
