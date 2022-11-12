@@ -33,6 +33,7 @@
 #include "lcd_server.h"
 #include "tictok.h"
 #include "key_services.h"
+#include "HanZi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "EndlessLoop"
 #define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
                   LCD_ShowStringLine(_LINE_,lcd_buffer);}while(0)
 
@@ -56,6 +59,8 @@
 CRC_HandleTypeDef hcrc;
 
 I2C_HandleTypeDef hi2c1;
+
+SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim4;
 
@@ -78,6 +83,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_FSMC_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -167,16 +173,13 @@ int main(void)
   MX_I2C1_Init();
   MX_FSMC_Init();
   MX_TIM4_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
     //tcp_echoserver_init();
     printf("good "__TIME__"\n");
     //EE_wipe();
     int ret =0;
-    //ret = EE_init();
-    //printf("%d\n",ret);
-    //HAL_I2C_DeInit(&hi2c1);
-    //HAL_I2C_Init(&hi2c1);
     /*
     httpc_connection_t httpc_settings= { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
     httpc_state_t    * phttpc_state = NULL;
@@ -197,15 +200,12 @@ int main(void)
     This.init();
     tictok.Init();
     LCD_Init(GRAYBLUE);
-
+    HanZi_init();
     tictok.Add(lcd_server,1000,0);//把部分定期执行的放到时钟中心里，以增强异步性
-    HAL_GPIO_WritePin(SENS_EN_GPIO_Port,SENS_EN_Pin,GPIO_PIN_RESET);
-    //HAL_Delay(10);
-   //
-   // HAL_GPIO_WritePin(SENS_EN_GPIO_Port,SENS_EN_Pin,GPIO_PIN_SET);
-    LcdPrint(LINE1,"hello Clion!2022");
+
+    LCD_ShowStringLineEx(LINE1,"中文CN中文CN");
     LCD_push(BLUE);
-    LCD_ShowStringLine(LINE10,"               Build:"__TIME__);
+    LCD_ShowStringLineEx(LINE10,"            构建时间："__TIME__);
     LCD_pop();
     LcdPrint(LINE2,"Initialing lwip...");
     MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
@@ -373,6 +373,44 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
+
+}
+
+/**
   * @brief TIM4 Initialization Function
   * @param None
   * @retval None
@@ -473,6 +511,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, SENS_EN_Pin|LCD_BL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(F_CS_GPIO_Port, F_CS_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -496,6 +537,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : F_CS_Pin */
+  GPIO_InitStruct.Pin = F_CS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(F_CS_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : RS485_RE_Pin */
   GPIO_InitStruct.Pin = RS485_RE_Pin;
@@ -609,3 +657,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+#pragma clang diagnostic pop
