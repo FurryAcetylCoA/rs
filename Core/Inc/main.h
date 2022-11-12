@@ -39,6 +39,7 @@ extern "C" {
 extern I2C_HandleTypeDef hi2c1;
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim4;
+extern SPI_HandleTypeDef hspi1;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -77,6 +78,8 @@ void Error_Handler(void);
 #define KEY_UP_GPIO_Port GPIOA
 #define SENS_EN_Pin GPIO_PIN_13
 #define SENS_EN_GPIO_Port GPIOB
+#define F_CS_Pin GPIO_PIN_14
+#define F_CS_GPIO_Port GPIOB
 #define LCD_BL_Pin GPIO_PIN_15
 #define LCD_BL_GPIO_Port GPIOB
 #define RS485_RE_Pin GPIO_PIN_8

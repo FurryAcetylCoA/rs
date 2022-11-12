@@ -1,5 +1,5 @@
 #include "lcd_gxct.h"
-
+#include "HanZi.h"
 static uint32_t LCD_background_stack; //LEN = 1
 //所用字体Y轴占24像素。共十行可用
 //所用字体X轴占12像素。共26列可用
@@ -19,6 +19,35 @@ void LCD_ShowStringLine(LCD_Line line, const char *p){
 			x += 24 / 2;
 			p++;
 	}  
+}
+
+//与LCD_ShowStringLine类似。但支持中文，不支持escape符
+void LCD_ShowStringLineEx(LCD_Line line, char *p){
+
+    uint16_t x = 0,y = line*24;
+    const uint8_t  escape='#';
+
+
+    uint16_t isAscii = 1;
+
+    while( * p != 0){
+        if (isAscii){
+            if (*p > 0x80){
+                isAscii = 0;
+                //break;
+            }else{
+                LCD_ShowChar(x,y,*p,24,0);
+                p++;
+                x+=24/2;
+            }
+        }else{
+            isAscii = 1;
+            Show_Font(x,y,p,24,0);
+            p+=2;
+            x+=24;
+        }
+
+    }
 }
 
 void LCD_clearLine(LCD_Line line){ //优化了一下 用更底层的方式（填充实心区域）来做

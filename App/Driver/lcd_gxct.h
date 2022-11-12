@@ -20,6 +20,7 @@ typedef enum{
 }LCD_Line;
 
 void LCD_ShowStringLine(LCD_Line line, const char *p);
+void LCD_ShowStringLineEx(LCD_Line line, char *p);
 void LCD_clearLine(LCD_Line line);
 void LCD_clearLineAll();
 void LCD_push(uint32_t new_background);
