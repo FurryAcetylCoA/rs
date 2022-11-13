@@ -71,12 +71,16 @@ static void lcd_server_empyrean(){
         LcdPrint(LINE8,"UP/DOWN:选择");
         LcdPrint(LINE9,"RIGHT:确认");
     }else if(This.su.ES.es_state == ES_Conform){
-        LcdPrint(LINE1,"对于设备 %d",This.config.dev_count+1);
-        LcdPrint(LINE2,"你选择了:");
+        LcdPrint(LINE1,"对于设备 %d 你选择了",This.config.dev_count+1);
         LCD_push(GREEN);
-        LcdPrint(LINE3,"###%s",devDesc[This.su.ES.es_select].name);
+        LcdPrint(LINE2,"###%s",devDesc[This.su.ES.es_select].name);
         LCD_pop();
-        LcdPrint(LINE4,"数据位1: %s 数据位2: %s","有",(devDesc[This.su.ES.es_select].data2.exist == 1?"有":"无"));
+        LcdPrint(LINE3,"数据位1: %s ",devDesc[This.su.ES.es_select].data1_display_name);
+        if(devDesc[This.su.ES.es_select].data2.exist == 1){
+            LcdPrint(LINE4,"数据位2: %s ",devDesc[This.su.ES.es_select].data2_display_name);
+        }else{
+            LcdPrint(LINE4,"数据位2: %s ","无");
+        }
         LcdPrint(LINE6,"请只连接这个设备");
         LcdPrint(LINE7,"按下 RIGHT 确认");
         LcdPrint(LINE8,"按下 LEFT 回上一页");
@@ -109,6 +113,8 @@ static void lcd_server_empyrean(){
     }
 
 }
+
+
 /**
 // @brief: 显示所有已注册的传感器信息
 // 格式为：
@@ -127,9 +133,10 @@ static void lcd_server_earth(){
 
         LcdPrint(i,"%s", ddev->name);
         if(ndev->sens_desc.data2.exist == 0){
-            LcdPrint(i+1,"Data1:%ld%s",ndev->data1,ddev->data1_unit);
-        }else{
-            LcdPrint(i+1,"Data1:%ld%s Data2:%ld%s",ndev->data1,ddev->data1_unit,ndev->data2,ddev->data2_unit);
+            LcdPrint(i+1,"%s:%ld%s",ddev->data1_display_name,ndev->data1,ddev->data1_unit);
+        }else{ //todo:这里很可能一行显示不下了。需要重新设计
+            LcdPrint(i+1,"%s:%ld%s %s:%ld%s",ddev->data1_display_name,ndev->data1,ddev->data1_unit,\
+                                             ddev->data2_display_name,ndev->data2,ddev->data2_unit);
         }
         i++;
     }
@@ -138,6 +145,8 @@ static void lcd_server_earth(){
     }
 
 }
+
+
 /***
  * @brief: 用于在不同模式切换时，修改底栏的内容
  * 之所以这个函数单独拎出来，是因为如果这种需要清行再显示的东西如果放在
@@ -147,15 +156,12 @@ static void lcd_server_earth(){
 void lcd_state_go(States next_state){
     LCD_clearLineAll();
     LCD_push(BLUE);
-
     switch (next_state) {
         case ST_Empyrean:
-
             LCD_clearLine(LINE10);
             LCD_ShowStringLineEx(LINE10,"设备注册界面");
             break;
         case ST_Earth:
-
             LCD_clearLine(LINE10);
             LCD_ShowStringLineEx(LINE10,"数据读取页面");
             break;

@@ -178,7 +178,7 @@ int main(void)
 
     //tcp_echoserver_init();
     printf("good "__TIME__"\n");
-    //EE_wipe();
+    EE_wipe();
     int ret =0;
     /*
     httpc_connection_t httpc_settings= { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };

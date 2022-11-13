@@ -76,6 +76,7 @@ sens_ErrCode sens_SetAddr(Sens_dev_desc *dev,uint8_t addr){
 sens_ErrCode sens_GetVal(Sens_dev_desc *dev){
 
     Sens_buffer sens_buffer;
+
     memset(&sens_buffer,0,sizeof(sens_buffer));
 
     sens_buffer.address = dev->address;

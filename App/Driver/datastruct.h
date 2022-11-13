@@ -17,7 +17,7 @@
 //            ENUM             //
 /////////////////////////////////
 typedef enum{
-    ST_Genesis =0, //初始状态
+    ST_Genesis = 0, //初始状态
     ST_Limbo,      //错误捕获及提示
     ST_saint_peter,
     ST_Silver_Key, //等待进入正常显示
@@ -104,6 +104,8 @@ typedef struct{
     uint8_t data1_unit[6];
     uint8_t data2_unit[6];
     uint8_t name[32];
+    uint8_t data1_display_name[32];
+    uint8_t data2_display_name[32];
 }Dev_desc;
 
 typedef struct{
