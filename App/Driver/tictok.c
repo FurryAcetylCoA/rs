@@ -101,6 +101,7 @@ static void  Remove(uint32_t ID){
         p=&task_list[i];
         if(p->ID==ID){
             p->ID=Task_Empty;
+            p->Tock = 0;
             break;
         }
     }
@@ -113,6 +114,7 @@ static void      Wipe(void){
         p=&task_list[i];
         if(p->ID!=Task_Empty){
             p->ID=Task_Empty;
+            p->Tock = 0;
             break;
         }
     }
