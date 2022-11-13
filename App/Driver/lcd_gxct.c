@@ -21,7 +21,7 @@ void LCD_ShowStringLine(LCD_Line line, const char *p){
 	}  
 }
 
-//与LCD_ShowStringLine类似。但支持中文，不支持escape符
+//与LCD_ShowStringLine类似。但支持中文
 void LCD_ShowStringLineEx(LCD_Line line, char *p){
 
     uint16_t x = 0,y = line*24;
@@ -36,7 +36,9 @@ void LCD_ShowStringLineEx(LCD_Line line, char *p){
                 isAscii = 0;
                 //break;
             }else{
-                LCD_ShowChar(x,y,*p,24,0);
+                if(*p != escape){
+                    LCD_ShowChar(x,y,*p,24,0);
+                }
                 p++;
                 x+=24/2;
             }

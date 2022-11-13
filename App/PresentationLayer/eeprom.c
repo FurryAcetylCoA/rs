@@ -18,7 +18,7 @@ void EE_wipe(){
     E2PRom_data zero_data;
     memset(&zero_data, 0, sizeof(E2PRom_data));
     EE_write(0, (uint8_t *) &zero_data, sizeof(E2PRom_data));
-    _TRAP;
+
 
 };
 // 初始化检查EEPROM是否可以读取

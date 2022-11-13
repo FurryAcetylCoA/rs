@@ -50,7 +50,7 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 #define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
-                  LCD_ShowStringLine(_LINE_,lcd_buffer);}while(0)
+                  LCD_ShowStringLineEx(_LINE_,lcd_buffer);}while(0)
 
 #define ignore_network
 /* USER CODE END PM */
@@ -114,14 +114,14 @@ void check_dhcp_callback(){
     if(dhcp != NULL){
         if (dhcp->state == 10) { //10:DHCP_STATE_BOUND see prot\dhcp.h
             LCD_clearLine(LINE4);
-            LcdPrint(LINE4, "Waiting DHCP...done");
+            LcdPrint(LINE4, "等待 DHCP...done");
             LcdPrint(LINE5, "IP:%s", ip4addr_ntoa(&(dhcp->offered_ip_addr)));
             LcdPrint(LINE6, "GW:%s", ip4addr_ntoa(&(dhcp->offered_gw_addr)));
             tictok.Remove(This.check_dhcp_callback_tictok_ID);
             HAL_Delay(1000); //尽管阻塞等待这么久不是好习惯，但系统在这个阶段还没有什么任务在执行
             This.state_go(ST_saint_peter);
         } else if(dhcp->tries >= 3 && dhcp->tries < 5) {
-            LcdPrint(LINE4, "Waiting DHCP...tried: %d",dhcp->tries);
+            LcdPrint(LINE4, "等待 DHCP...重试: %d",dhcp->tries);
 
         }else if(dhcp->tries >= 5) {
             This.on_error(__func__);
@@ -196,37 +196,33 @@ int main(void)
 
     uint32_t Sent = 0;
     uint32_t InitTime = HAL_GetTick() ;
-    This.state = ST_Genesis;
+
     This.init();
-    tictok.Init();
-    LCD_Init(GRAYBLUE);
-    HanZi_init();
+
     tictok.Add(lcd_server,1000,0);//把部分定期执行的放到时钟中心里，以增强异步性
 
     LCD_ShowStringLineEx(LINE1,"中文CN中文CN");
-    LCD_push(BLUE);
-    LCD_ShowStringLineEx(LINE10,"            构建时间："__TIME__);
-    LCD_pop();
-    LcdPrint(LINE2,"Initialing lwip...");
+    LcdPrint(LINE2,"初始化 lwip...");
     MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
     MX_LWIP_Process();
-    LcdPrint(LINE2,"Initialing lwip... done");
-    LcdPrint(LINE3,"Checking if up ...");
+    LcdPrint(LINE2,"初始化 lwip... 成功");
+    LcdPrint(LINE3,"检查网线情况...");
 #ifdef ignore_network  //为了方便调试，可以选择忽略网络存在性检查
     if (1){
 #else
     if(check_if_up()){
 #endif
-        LcdPrint(LINE3,"Checking if up ...Ok");
-        LcdPrint(LINE4,"Waiting DHCP...");
+        LcdPrint(LINE3,"检查网线情况... 成功");
+        LcdPrint(LINE4,"等待 DHCP...");
     }else{
-        LcdPrint(LINE3,"Checking if up ...No link");
-        LcdPrint(LINE4,"Did you plug the cabal?");
+        LcdPrint(LINE3,"检查网线情况... 失败");
+        LcdPrint(LINE4,"你插线了吗?");
         LCD_push(RED);
         LCD_ShowStringLine(LINE10,"ERROR");
         LCD_pop();
     }
 #ifdef ignore_network
+    HAL_Delay(600);
     This.state_go(ST_saint_peter);
 #else
     MX_LWIP_Process();

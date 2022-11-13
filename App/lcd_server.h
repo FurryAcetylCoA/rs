@@ -8,4 +8,7 @@
 #include "App.h"
 
 void lcd_server();
+
+void lcd_state_go(States next_state);
+
 #endif //RS_LCD_SERVER_H

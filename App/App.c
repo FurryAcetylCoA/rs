@@ -9,6 +9,8 @@
 #include "data.h"
 #include "lcd_gxct.h"
 #include "sensor.h"
+#include "lcd_server.h"
+#include "HanZi.h"
 
 const Dev_desc devDesc[]={                  //为了方便字库的操作。用双引号代替°
         {.name="Air Temp&Humidity",.inst_sized=0,.data1_unit="\"C"    ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2_unit="%RH",.data2.factor=10,.data2.is_signed=1},
@@ -94,6 +96,11 @@ void App_test_misc(){
 }
 static void App_init(){
     This.total_dev=sizeof(devDesc)/sizeof (devDesc[0]);//必须要在这个文件里取，因为siezof是编译期确定，而extern 是链接期确定
+    tictok.Init();
+    LCD_Init(GRAYBLUE);
+    HanZi_init();
+
+    This.state_go(ST_Genesis);
 }
 
 /**
@@ -132,18 +139,17 @@ static void State_go(States next_state){
     if(This.state == ST_Limbo){
         return; //limbo 状态不允许移出
     }
+    lcd_state_go(next_state);
+
     switch (next_state) {
         case ST_Silver_Key:
             This.state= ST_Silver_Key;
-
             break;
         case ST_Genesis:
-            _TRAP;
             break;
         case ST_saint_peter:
             EE_Load(&This);//读入EEPROM配置
             This.state=ST_saint_peter;
-            LCD_clearLineAll();
             break;
         case ST_Earth:
             //填充所有数据，然后注册数据中间件轮询到时钟中心
@@ -151,14 +157,12 @@ static void State_go(States next_state){
             memset(&This.su,0,sizeof(This.su));
             tictok.Add(s_data.Poll,1000,false);
             This.state=ST_Earth;
-            LCD_clearLineAll();
             break;
         case ST_Golden_Key:
             //进入设备注册
             This.state=ST_Golden_Key;
             break;
         case ST_Empyrean:
-            LCD_clearLineAll();
             EE_Load(&This);
             memset(&This.su, 0, sizeof(This.su));
             if(This.config.dev_count>=lenof(This.devs)){
