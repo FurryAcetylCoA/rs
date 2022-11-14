@@ -36,7 +36,8 @@ Key_data key_reader(){
     Key_data keys_accepted,keys_pressed;
     keys_pressed = read_key();
     keys_accepted.U = keys_pressed.U & (keys_old.U ^ keys_pressed.U);//按键必须是：1)现在按下的 & 2)上轮没按下的
-    keys_old = keys_pressed;//change to pressed to avoid combo
+    //keys_old = keys_accepted;//change to pressed to avoid combo
+    keys_old.U = keys_pressed.U;
 
     return keys_accepted;
 }

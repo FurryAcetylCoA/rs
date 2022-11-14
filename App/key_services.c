@@ -43,7 +43,14 @@ void static key_services_golden_key(){
     }
 }
 void static key_services_silver_key(){
-    if(This.keys.U != 0){
+    if(This.keys.key2 != 0){
+        This.state_go(ST_Golden_Key);
+    }else if(This.keys.key0 != 0){
+        This.config.dev_count = 0;
+        EE_Store(&This);
+        HAL_NVIC_SystemReset();
+    }
+    else if(This.keys.U != 0){
         This.state_go(ST_Earth);
     }
 }

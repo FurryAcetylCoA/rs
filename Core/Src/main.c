@@ -90,7 +90,7 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void httpc_result_fn_impl(void *arg, httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err){
+static void httpc_result_fn_impl(void *arg, httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err){
 	LWIP_UNUSED_ARG(arg);
 	LWIP_UNUSED_ARG(httpc_result);
 	LWIP_UNUSED_ARG(rx_content_len);

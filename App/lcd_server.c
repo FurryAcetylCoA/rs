@@ -35,6 +35,10 @@ void lcd_server(){
             LCD_ShowStringLineEx(LINE1,"ST_Silver_key");
             LCD_ShowStringLineEx(LINE2,"系统准备完成  ");
             LCD_ShowStringLineEx(LINE3,"按任意键开始读取");
+
+            LCD_ShowStringLine(LINE7,"UP: Register more device");
+            LCD_ShowStringLine(LINE8,"DOWN: Remove all device !");
+            LCD_ShowStringLine(LINE8,"OTHER:continue reading");
             break;
         case ST_Earth:
             lcd_server_earth();

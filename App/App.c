@@ -148,16 +148,24 @@ static void State_go(States next_state){
         case ST_Genesis:
             This.state=ST_Genesis
             break;
+        case ST_Silver_Key:
+            EE_Load(&This);
+            This.state=ST_Silver_Key;
+            LCD_clearLineAll();
+            break;
         case ST_saint_peter:
             EE_Load(&This);//读入EEPROM配置
             This.state=ST_saint_peter;
             break;
         case ST_Earth:
             //填充所有数据，然后注册数据中间件轮询到时钟中心
+            //onenet事件注册在这里
+            //todo：离开earth时要注销onenet
             s_data.Pollall();
             memset(&This.su,0,sizeof(This.su));
             tictok.Add(s_data.Poll,1000,false);
             This.state=ST_Earth;
+            LCD_clearLineAll();
             break;
         case ST_Golden_Key:
             //进入设备注册
