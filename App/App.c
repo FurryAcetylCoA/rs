@@ -11,11 +11,13 @@
 #include "sensor.h"
 #include "lcd_server.h"
 #include "HanZi.h"
+#include "onenet.h"
 
 const Dev_desc devDesc[]={                  //为了方便字库的操作。用双引号代替°
-        {.name="Air Temp&Humidity",.inst_sized=0,.data1_display_name="空气温度"   ,.data1_unit="\"C"  ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2_display_name="空气湿度",.data2_unit="%RH",.data2.factor=10,.data2.is_signed=1},
+        {.name="Air Temp&Humidity",.inst_sized=0,.data1_display_name="温度" ,.data1_unit="\"C"  ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2_display_name="湿度",.data2_unit="%RH",.data2.factor=10,.data2.is_signed=1},
         {.name="CO2"              ,.inst_sized=0,.data1_display_name="二氧化碳浓度",.data1_unit="ppm"  ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
-        {.name="Soil Conductance" ,.inst_sized=0,.data1_display_name="土壤电导率"  ,.data1_unit="mS/cm",.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0}
+        {.name="Soil Conductance" ,.inst_sized=0,.data1_display_name="土壤电导率"  ,.data1_unit="mS/cm",.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0},
+        {.name="PH"               ,.inst_sized=1,.data1_display_name="PH值" ,.data1_unit="pH",.data1.factor=100      ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0 }
 };//请只在最后添加。否则会影响已有传感器
 
 
@@ -142,11 +144,8 @@ static void State_go(States next_state){
     lcd_state_go(next_state);
 
     switch (next_state) {
-        case ST_Silver_Key:
-            This.state= ST_Silver_Key;
-            break;
         case ST_Genesis:
-            This.state=ST_Genesis
+            This.state=ST_Genesis;
             break;
         case ST_Silver_Key:
             EE_Load(&This);
@@ -163,7 +162,12 @@ static void State_go(States next_state){
             //todo：离开earth时要注销onenet
             s_data.Pollall();
             memset(&This.su,0,sizeof(This.su));
-            tictok.Add(s_data.Poll,1000,false);
+            if(This.config.dev_count <=2) {
+                tictok.Add(s_data.Poll, 1000, false);
+            }else{
+                tictok.Add(s_data.Poll,300,false);
+            }
+            onenet_update(0);
             This.state=ST_Earth;
             LCD_clearLineAll();
             break;

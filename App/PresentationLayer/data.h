@@ -12,7 +12,6 @@ typedef struct {
     void (*Poll)(void);
     void (*Pollall)(void);
     void (*PollOne)(uint8_t);
-    void (*Print)(char*,uint8_t);
 }S_Data;
 
 extern S_Data s_data;

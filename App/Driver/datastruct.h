@@ -33,6 +33,13 @@ typedef enum{
     ES_Yet_Another,  //已经完成一轮注册，是否要再添加设备
     ES_Full //满了 不能再加设备了
 }Empyrean_States;
+
+typedef enum{
+    sens_success =0,
+    sens_failed_crc,//有可能是离线或接触不良
+    sens_failed_other
+}sens_ErrCode;
+
 /////////////////////////////////
 //           STRUCT            //
 /////////////////////////////////
@@ -110,8 +117,9 @@ typedef struct{
 
 typedef struct{
     Sens_dev_desc   sens_desc;
-    int32_t  data1;
-    int32_t  data2;
+    float  data1;
+    float  data2;
+    sens_ErrCode  errCode;
    // uint8_t  name[32];
 }App_dev_desc; // 应用级传感器描述符
 
@@ -149,6 +157,7 @@ typedef struct{
         States state;
         Key_data keys;
         uint32_t check_dhcp_callback_tictok_ID; //目前只有这个任务会需要结束自己
+
     };
     struct{
         void (*state_go) (States);

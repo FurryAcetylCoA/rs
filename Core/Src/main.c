@@ -52,7 +52,7 @@
 #define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
                   LCD_ShowStringLineEx(_LINE_,lcd_buffer);}while(0)
 
-#define ignore_network
+//#define ignore_network
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -70,7 +70,7 @@ SRAM_HandleTypeDef hsram1;
 
 /* USER CODE BEGIN PV */
 
-uint8_t errstring[64];
+
 static char    lcd_buffer[32];
 
 /* USER CODE END PV */
@@ -114,7 +114,7 @@ void check_dhcp_callback(){
     if(dhcp != NULL){
         if (dhcp->state == 10) { //10:DHCP_STATE_BOUND see prot\dhcp.h
             LCD_clearLine(LINE4);
-            LcdPrint(LINE4, "等待 DHCP...done");
+            LcdPrint(LINE4, "等待 DHCP... 成功");
             LcdPrint(LINE5, "IP:%s", ip4addr_ntoa(&(dhcp->offered_ip_addr)));
             LcdPrint(LINE6, "GW:%s", ip4addr_ntoa(&(dhcp->offered_gw_addr)));
             tictok.Remove(This.check_dhcp_callback_tictok_ID);
@@ -133,6 +133,8 @@ void check_dhcp_callback(){
 }
 
 bool check_if_up(){
+    MX_LWIP_Process();
+    //HAL_Delay(5);//todo:有的时候会莫名提示没有插线
     if(! (netif_default->flags & 0x01)){ //see netif.h for details
         return false;
     }
@@ -178,10 +180,11 @@ int main(void)
 
     //tcp_echoserver_init();
     printf("good "__TIME__"\n");
-    EE_wipe();
+   // EE_wipe();
     int ret =0;
     /*
-    httpc_connection_t httpc_settings= { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
+    httpc_connection_t httpc_settings= \
+     { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
     httpc_state_t    * phttpc_state = NULL;
     ip4_addr_t addr;
     IP4_ADDR(&addr,192,168,3,3);
@@ -226,7 +229,7 @@ int main(void)
     This.state_go(ST_saint_peter);
 #else
     MX_LWIP_Process();
-    tictok.Add(check_dhcp_callback,400,false); //400ms检查一次dhcp状态
+    This.check_dhcp_callback_tictok_ID=tictok.Add(check_dhcp_callback,500,false); //500ms检查一次dhcp状态
 #endif
 
   tictok.Add(This.state_server,200,0);

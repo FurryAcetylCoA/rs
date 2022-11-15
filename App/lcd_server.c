@@ -34,11 +34,11 @@ void lcd_server(){
         case ST_Silver_Key:
             LCD_ShowStringLineEx(LINE1,"ST_Silver_key");
             LCD_ShowStringLineEx(LINE2,"系统准备完成  ");
-            LCD_ShowStringLineEx(LINE3,"按任意键开始读取");
+            LCD_ShowStringLineEx(LINE3,"可以开始读取");
 
-            LCD_ShowStringLine(LINE7,"UP: Register more device");
-            LCD_ShowStringLine(LINE8,"DOWN: Remove all device !");
-            LCD_ShowStringLine(LINE8,"OTHER:continue reading");
+            LCD_ShowStringLineEx(LINE6,"按 UP 增加设备");
+            LCD_ShowStringLineEx(LINE7,"按 DOWN 删除所有设备");
+            LCD_ShowStringLineEx(LINE8,"按 其他键 继续读取");
             break;
         case ST_Earth:
             lcd_server_earth();
@@ -47,7 +47,9 @@ void lcd_server(){
             //LCD_clearLine(LINE2);//这里tmd会闪
             //LCD_clearLine(LINE3);
             LCD_ShowStringLineEx(LINE1,"ST_Golden_key");
-            LCD_ShowStringLineEx(LINE3,"没有已注册设备   ");
+            if(This.config.dev_count == 0){
+                LCD_ShowStringLineEx(LINE3,"没有已注册设备   ");
+            }
             LCD_ShowStringLineEx(LINE4,"按任意键开始注册 ");
             break;
         case ST_Empyrean:
@@ -95,9 +97,20 @@ static void lcd_server_empyrean(){
         LcdPrint(LINE3,"写入器件地址... 完成");
         if (This.su.ES.es_programing_step < 2){ return; }
         LcdPrint(LINE4,"读数测试");
-        s_data.Print(lcd_buffer,This.config.dev_count);//这种情况下，devcount已经被加过了
-        LCD_ShowStringLine(LINE5,lcd_buffer);
-        LcdPrint(LINE6,"按 RIGHT 确认");
+        App_dev_desc   *ndev = &This.devs[This.config.dev_count];//这种情况下，devcount已经被加过了
+        Dev_desc const *ddev = &devDesc[ndev->sens_desc.name_index];
+        if(ndev->errCode == sens_success) {
+            if (ndev->sens_desc.data2.exist == 0) {
+                LcdPrint(LINE5, "%s:%.1f%s     ", ddev->data1_display_name, ndev->data1, ddev->data1_unit);
+            } else {
+                LcdPrint(LINE5, "%s:%.1f%s %s:%.1f%s    ", ddev->data1_display_name, ndev->data1, ddev->data1_unit, \
+                                             ddev->data2_display_name, ndev->data2, ddev->data2_unit);
+            }
+            LcdPrint(LINE6,"按 RIGHT 确认");
+        }else{
+            LcdPrint(LINE5,"传感器错误或离线! ");
+        }
+
         LcdPrint(LINE7,"按 UP 重试");
         LcdPrint(LINE8,"按 LEFT 回上一页");
     }else if (This.su.ES.es_state == ES_Yet_Another){
@@ -135,13 +148,17 @@ static void lcd_server_earth(){
         ndev = &This.devs[i+This.su.EA.current_top];
         ddev = &devDesc[ndev->sens_desc.name_index];
 
-        LcdPrint(i,"%s", ddev->name);
-        if(ndev->sens_desc.data2.exist == 0){
-            LcdPrint(i+1,"%s:%ld%s",ddev->data1_display_name,ndev->data1,ddev->data1_unit);
-        }else{ //todo:这里很可能一行显示不下了。需要重新设计
-            LcdPrint(i+1,"%s:%ld%s %s:%ld%s",ddev->data1_display_name,ndev->data1,ddev->data1_unit,\
-                                             ddev->data2_display_name,ndev->data2,ddev->data2_unit);
-        }
+        LcdPrint(i*2,"%s", ddev->name);
+        if(ndev->errCode == sens_success) {
+            if (ndev->sens_desc.data2.exist == 0) {
+                LcdPrint(i*2 + 1, "%s:%.1f%s     ", ddev->data1_display_name, ndev->data1, ddev->data1_unit);
+            } else { //todo:这里很可能一行显示不下了。需要重新设计
+                LcdPrint(i*2 + 1, "%s:%.1f%s %s:%.1f%s    ", ddev->data1_display_name, ndev->data1, ddev->data1_unit, \
+                                             ddev->data2_display_name, ndev->data2, ddev->data2_unit);
+            }
+        }else{
+            LcdPrint(i*2+1,"传感器错误或离线! ");
+        }//todo:用那个print
         i++;
     }
     if(This.config.dev_count > 8){

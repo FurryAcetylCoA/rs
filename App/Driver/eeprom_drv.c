@@ -55,7 +55,7 @@ static void I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Write(hi2c,DevAddress,MemAddress,MemAddSize,pData,Size,Timeout);
     i2c_cold_down = HAL_GetTick();
     if(ret != HAL_OK) { //我这才体会到java那种“错误必须被catch或上报”的设计是多么地有道理
-        _TRAP;
+        This.on_error("I2Cbusy 请断电重启开发板");
     }
 }
 

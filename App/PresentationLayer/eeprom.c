@@ -29,10 +29,10 @@ HAL_StatusTypeDef EE_init(){
     uint8_t string[]={"CoA"__TIME__};
     uint8_t string_echo[sizeof(string)];
 
-    EE_write(231,string,sizeof(string));
+    EE_write(232,string,sizeof(string));
 
     HAL_Delay(1);
-    EE_read (231,string_echo,sizeof(string));
+    EE_read (232,string_echo,sizeof(string));
     hr = (0 == strcmp((char*)string, (char*)string_echo)) ? HAL_OK : HAL_ERROR;
 
     if (hr != HAL_OK){
