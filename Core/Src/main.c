@@ -120,10 +120,10 @@ void check_dhcp_callback(){
             tictok.Remove(This.check_dhcp_callback_tictok_ID);
             HAL_Delay(1000); //尽管阻塞等待这么久不是好习惯，但系统在这个阶段还没有什么任务在执行
             This.state_go(ST_saint_peter);
-        } else if(dhcp->tries >= 3 && dhcp->tries < 5) {
+        } else if(dhcp->tries >= 4 && dhcp->tries < 7) {
             LcdPrint(LINE4, "等待 DHCP...重试: %d",dhcp->tries);
 
-        }else if(dhcp->tries >= 5) {
+        }else if(dhcp->tries >= 7) {
             This.on_error(__func__);
         }
 
@@ -229,7 +229,7 @@ int main(void)
     This.state_go(ST_saint_peter);
 #else
     MX_LWIP_Process();
-    This.check_dhcp_callback_tictok_ID=tictok.Add(check_dhcp_callback,500,false); //500ms检查一次dhcp状态
+    This.check_dhcp_callback_tictok_ID=tictok.Add(check_dhcp_callback,300,false); //300ms检查一次dhcp状态
 #endif
 
   tictok.Add(This.state_server,200,0);
