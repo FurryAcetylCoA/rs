@@ -134,7 +134,7 @@ void check_dhcp_callback(){
 
 bool check_if_up(){
     MX_LWIP_Process();
-    //HAL_Delay(5);//todo:有的时候会莫名提示没有插线
+    //HAL_Delay(5);//todo:有的时候会莫名提示没有插线 //可能与https://trilium.acetylcoa.tech//share/Kqtj7E7W1HjB 有关
     if(! (netif_default->flags & 0x01)){ //see netif.h for details
         return false;
     }
@@ -177,7 +177,6 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-
     //tcp_echoserver_init();
     printf("good "__TIME__"\n");
    // EE_wipe();
@@ -656,5 +655,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-#pragma clang diagnostic pop
