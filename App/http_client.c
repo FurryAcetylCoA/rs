@@ -68,7 +68,7 @@
 
 /** This string is passed in the HTTP header as "User-Agent: " */
 #ifndef HTTPC_CLIENT_AGENT
-#define HTTPC_CLIENT_AGENT "lwIP/" LWIP_VERSION_STRING " (http://savannah.nongnu.org/projects/lwip)"
+#define HTTPC_CLIENT_AGENT "lwIP/" LWIP_VERSION_STRING
 #endif
 
 /* the various debug levels for this file */
@@ -105,12 +105,12 @@
 #define HTTPC_REQ_11_POST "POST %s HTTP/1.1\r\n" /* URI */\
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
-    "Content-Length: %d\r\n" /*我也不知道为啥 但是len必须加一*/\
+    "Content-Length: %d\r\n" \
     "Connection: Close\r\n" /* we don't support persistent connections */ \
     "\r\n" \
     "%s"
 
-#define HTTPC_REQ_11_FORMAT_POST(uri, body, len) HTTPC_REQ_11_POST, uri, HTTPC_CLIENT_AGENT, len+1, body
+#define HTTPC_REQ_11_FORMAT_POST(uri, body, len) HTTPC_REQ_11_POST, uri, HTTPC_CLIENT_AGENT, len, body
 
 /* POST request with host */
 #define HTTPC_REQ_11_POST_HOST "POST %s HTTP/1.1\r\n" /* URI */\
@@ -119,9 +119,9 @@
     "Host: %s\r\n" /* server name */ \
 		"Content-Length: %d\r\n"\
 		"Connection: Close\r\n" /* we don't support persistent connectionsb*/ \
-    "\r\n " \
+    "\r\n" \
 		"%s"
-#define HTTPC_REQ_11_HOST_FORMAT_POST(uri, srv_name, body, len) HTTPC_REQ_11_POST_HOST, uri, HTTPC_CLIENT_AGENT, srv_name, len+1, body
+#define HTTPC_REQ_11_HOST_FORMAT_POST(uri, srv_name, body, len) HTTPC_REQ_11_POST_HOST, uri, HTTPC_CLIENT_AGENT, srv_name, len, body
 
 
 /** Free http client state and deallocate all resources within */
