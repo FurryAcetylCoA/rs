@@ -76,3 +76,34 @@ void Show_Font(u16 x,u16 y,u8 *font,u8 size,u8 mode)
         }
     }
 }
+
+wchar_t ff_convert ( /* Converted code, 0 means conversion error */
+        wchar_t src,/* Character code to be converted */
+        uint32_t dir/* 0: Unicode to OEMCP, 1: OEMCP to Unicode */
+        )
+{
+    wchar_t t[2];
+    wchar_t c;
+    u32 i, li, hi;
+    u16 n;
+    u32 gbk2uni_offset=0;
+    if (src < 0x80)c = src;//ASCII,直接不用转换.
+    else
+    {
+        if(dir) gbk2uni_offset=ftinfo.ugbksize/2;    //GBK 2 UNICODE
+        else gbk2uni_offset=0;                       //UNICODE 2 GBK
+        /* Unicode to OEMCP */
+        hi=ftinfo.ugbksize/2;//对半开.
+        hi =hi / 4 - 1;
+        li = 0;
+        for (n = 16; n; n--){
+            i = li + (hi - li) / 2;
+            w25q128_read_data(ftinfo.ugbkaddr+i*4+gbk2uni_offset,(u8*)&t,4);//读出 4 个字节
+            if (src == t[0]) break;
+            if (src > t[0])li = i;
+            else hi = i;
+        }
+        c = n ? t[1]:0;
+    }
+    return c;
+}

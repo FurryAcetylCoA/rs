@@ -5,6 +5,7 @@
 #include "onenet.h"
 #include "http_client.h"
 #include "lcd_gxct.h"
+#include "HanZi.h"
 
 static uint8_t current_poll;
 
@@ -23,7 +24,7 @@ void onenet_update_one(){
 }
 
 void onenet_update(uint8_t n){
-    //httpc_connection_t httpc_settings= { HTTPC_METHOD_POST ,NULL,0 ,httpc_result_fn_impl_onenet, NULL };
+    //httpc_connetion_t 的生命周期一定要能涵盖到httpc_result_fn_impl_onenet结束为止
     static httpc_connection_t  httpc_settings = {.method=HTTPC_METHOD_POST,.post_body = NULL,.body_len = 0,
                                          .result_fn = httpc_result_fn_impl_onenet,
                                          .headers_done_fn = NULL};
@@ -35,7 +36,7 @@ void onenet_update(uint8_t n){
     Dev_desc const *ddev = &devDesc[n];
     if(ndev->sens_desc.data2.exist){
         httpc_settings.body_len = snprintf((char *) Postbuf, lenof(Postbuf), \
-                        "{\"datastreams\": [{\"id\": \"%s-%s\",\"datapoints\": [{\"value\": \"%.1f\"}]},{\"id\": \"%s-%s\",\"datapoints\": [{\"value\": \"%.1f\"}]}]}",\
+                        "{\"datastreams\": [{\"id\": \"%s-%ls\",\"datapoints\": [{\"value\": \"%.1f\"}]},{\"id\": \"%s-%s\",\"datapoints\": [{\"value\": \"%.1f\"}]}]}",\
                          ddev->name,ddev->data1_display_name,ndev->data1,ddev->name,ddev->data2_display_name,ndev->data2);
      }else {
         httpc_settings.body_len = snprintf((char *) Postbuf, lenof(Postbuf), \
@@ -43,7 +44,7 @@ void onenet_update(uint8_t n){
                         ddev->name,ddev->data1_display_name,ndev->data1);
     }
     httpc_settings.post_body =  &(Postbuf);
-    httpc_request_file(&addr,80,"/file.php",&httpc_settings,NULL,phttpc_state,&phttpc_state);
+    httpc_request_file_dns("api.heclouds.com",80,"/devices/1006144166/datapoints",&httpc_settings,NULL,phttpc_state,&phttpc_state);
 
 }
 void httpc_result_fn_impl_onenet(void *arg, httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err){

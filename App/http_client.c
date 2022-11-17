@@ -107,6 +107,7 @@
     "Accept: */*\r\n" \
     "Content-Length: %d\r\n" \
     "Connection: Close\r\n" /* we don't support persistent connections */ \
+    "api-key: u9V3xUJUU6OqGUAFRDi5388n2Cs=\r\n"  \
     "\r\n" \
     "%s"
 
@@ -117,8 +118,9 @@
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
     "Host: %s\r\n" /* server name */ \
-		"Content-Length: %d\r\n"\
-		"Connection: Close\r\n" /* we don't support persistent connectionsb*/ \
+    "Content-Length: %d\r\n"\
+    "api-key: u9V3xUJUU6OqGUAFRDi5388n2Cs=\r\n"                \
+    "Connection: Close\r\n" /* we don't support persistent connectionsb*/ \
     "\r\n" \
 		"%s"
 #define HTTPC_REQ_11_HOST_FORMAT_POST(uri, srv_name, body, len) HTTPC_REQ_11_POST_HOST, uri, HTTPC_CLIENT_AGENT, srv_name, len, body

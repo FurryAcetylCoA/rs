@@ -24,5 +24,5 @@ extern font_info ftinfo;
 
 void HanZi_init(void);
 void Show_Font(u16 x,u16 y,u8 *font,u8 size,u8 mode);
-
+wchar_t ff_convert (wchar_t src,uint32_t dir);
 #endif //RS_HANZI_H
