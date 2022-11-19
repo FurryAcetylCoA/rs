@@ -5,8 +5,10 @@
 #ifndef RS_APP_H
 #define RS_APP_H
 #include "main.h"
+#include "datastruct.h"
 #include "eeprom.h"
 #include "key.h"
+
 
 ////////////////////
 //    FUNCTION    //

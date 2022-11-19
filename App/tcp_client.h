@@ -1,7 +1,8 @@
 #ifndef __TCP_CLIENT_H__
 #define __TCP_CLIENT_H__
 
-#include <main.h>   
+#include <main.h>
+#include "datastruct.h"
 #include "lwip.h"   
 
 

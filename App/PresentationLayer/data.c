@@ -32,7 +32,7 @@ static void sdata_PollOne(uint8_t num){
 
 /**
 * @brief 根据当前轮询id号
-* todo:目前是阻塞，我想写成回调，但是没想好怎么写
+*
 *
 * @retval None.
 */
@@ -49,7 +49,6 @@ static void sdata_Poll_Pub(){
 
 /**
 * @brief 向下层要求某个传感器的数据
-* todo:目前是阻塞，我想写成回调，但是没想好怎么写
 * @param current_poll: 需要查询的id号
 * @retval None.
 */
@@ -68,8 +67,7 @@ static void sdata_Poll(uint32_t current_poll){
     /////处理data1_raw/////
     ///符号控制///
     if(This.devs[current_poll].sens_desc.data1.is_signed == 1){
-        //对于有符号数，要解码（todo：int32是不是自己就能解了。得试试）
-        //_TRAP;
+        //对于有符号数，要解码
         if((uint16_t)This.devs[current_poll].sens_desc.data1_raw >= 0x8000 ) {
             data1_temp = (float)0xFFFF - (float) This.devs[current_poll].sens_desc.data1_raw + 1;
             data1_temp = -1 * data1_temp;
@@ -85,6 +83,7 @@ static void sdata_Poll(uint32_t current_poll){
     }else{
         data1_temp /= (float)This.devs[current_poll].sens_desc.data1.factor;
     }//乘除系数结束
+    This.devs[current_poll].data1 = data1_temp;
     /////处理data2_raw/////
     ///存在性判断///
     if(This.devs[current_poll].sens_desc.data2.exist){
@@ -105,8 +104,6 @@ static void sdata_Poll(uint32_t current_poll){
         }
         This.devs[current_poll].data2 = data2_temp;
     }
-    This.devs[current_poll].data1 = data1_temp;
-
 
 }
 

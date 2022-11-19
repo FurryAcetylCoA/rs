@@ -13,12 +13,26 @@
 #include "HanZi.h"
 #include "onenet.h"
 
+//所有支持的传感器
 const Dev_desc devDesc[]={                  //为了方便字库的操作。用双引号代替°
-        {.name="Air Temp&Humidity",.inst_sized=0,.data1_display_name="温度" ,.data1_unit="\"C"  ,.data1.factor=10 ,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=1,.data2_display_name="湿度",.data2_unit="%RH",.data2.factor=10,.data2.is_signed=1},
-        {.name="CO2"              ,.inst_sized=0,.data1_display_name="二氧化碳浓度",.data1_unit="ppm"  ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0},
-        {.name="Soil Conductance" ,.inst_sized=0,.data1_display_name="土壤电导率"  ,.data1_unit="mS/cm",.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1,.data2.exist=0},
-        {.name="PH"               ,.inst_sized=1,.data1_display_name="PH值" ,.data1_unit="pH",.data1.factor=100      ,.data1.is_signed=0,.data1.mult_or_div=1,.data2.exist=0 }
-};//请只在最后添加。否则会影响已有传感器
+        {.name="Air Temp&Humidity",.inst_sized=0, .data2.exist=1,
+        .data1_display_name="温度" , .data2_display_name="湿度",.data1_name="Temperature",.data2_name="Humidity",
+        .data1_unit="\"C"  ,.data1.factor=10, .data1.is_signed=1,.data1.mult_or_div=1,
+        .data2_unit="%RH",  .data2.factor=10, .data2.is_signed=1 },
+
+        {.name="CO2"              ,.inst_sized=0 ,.data2.exist=0,
+        .data1_display_name="二氧化碳浓度",.data1_name="",
+        .data1_unit="ppm"  ,.data1.factor=1  ,.data1.is_signed=0,.data1.mult_or_div=1},
+
+        {.name="Soil Conductance" ,.inst_sized=0,.data2.exist=0,
+        .data1_display_name="土壤电导率",.data1_name="",
+        .data1_unit="mS/cm",.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1},
+
+        {.name="PH"               ,.inst_sized=1,.data2.exist=0,
+        .data1_display_name="PH值" ,.data1_name="",
+        .data1_unit="pH",.data1.factor=100,.data1.is_signed=0,.data1.mult_or_div=1 }
+
+};//请只在最后添加新传感器。否则会影响已有传感器
 
 
 
@@ -37,65 +51,7 @@ App_info This={
         .on_error = on_error
 };
 
-void App_test_misc(){
-   // goto read_test;
-    Sens_dev_desc test_dev2={.inst_sized=0};
-    sens_ErrCode ret =sens_SetAddr(&test_dev2,0x04);
-    _TRAP;
-    return;
-    read_test:
-    _TRAP;
-    //以下测试已通过
-    Sens_dev_desc test_dev={.address=0x04,.inst_sized=0};
-    test_dev.data1.factor=10;
-    test_dev.data1.is_signed=1;
-    test_dev.data1.mult_or_div=1;
-    test_dev.data2.exist=1;
-    test_dev.data2.is_signed=0;
-    test_dev.data2.factor=10;
-    sens_GetVal(&test_dev);
-    _TRAP;
-    return;
-    This.config.dev_count = 3;
-    This.devs[0].sens_desc.address = 0x32;
-    This.devs[0].sens_desc.inst_sized = 1;
-    This.devs[0].sens_desc.name_index = 3;
-    This.devs[0].sens_desc.data1.is_signed = 1;
-    This.devs[0].sens_desc.data1.factor    = 1000;
-    This.devs[0].sens_desc.data1.mult_or_div = 1;
-    This.devs[0].sens_desc.data2.exist =1;
-    This.devs[0].sens_desc.data2.factor = 10;
-    This.devs[1].sens_desc.address = 0x77;
-    This.devs[1].sens_desc.inst_sized = 0;
-    This.devs[1].sens_desc.name_index = 7;
-    This.devs[1].sens_desc.data1.is_signed = 0;
-    This.devs[1].sens_desc.data1.factor = 100;
-    This.devs[1].sens_desc.data1.mult_or_div = 0;
-    This.devs[1].sens_desc.data2.exist=0;
-    This.devs[2].sens_desc.address = 0x01;
-    This.devs[2].sens_desc.inst_sized = 0;
-    This.devs[2].sens_desc.name_index = 9;
-    This.devs[2].sens_desc.data1.is_signed = 0;
-    This.devs[2].sens_desc.data1.factor = 1;
-    This.devs[2].sens_desc.data1.mult_or_div = 0;
-    This.devs[2].sens_desc.data2.exist=1;
-    This.devs[2].sens_desc.data2.is_signed=1;
-    This.devs[2].sens_desc.data2.factor = 1000;
-    HAL_StatusTypeDef e;
-    e = EE_Store(&This);
-    App_info This2; //应该解决了
-    //sizeof "This" is 524
-    if(e!=HAL_OK){
-        _TRAP;
-    }
-    memset(&This2,0,sizeof(This2));
-    EE_Load(&This2);
 
-    if(memcmp(This.devs,This2.devs,sizeof(This.devs))!=0){
-        _TRAP;
-    }
-    _TRAP;
-}
 static void App_init(){
     This.total_dev=sizeof(devDesc)/sizeof (devDesc[0]);//必须要在这个文件里取，因为siezof是编译期确定，而extern 是链接期确定
     tictok.Init();
@@ -130,6 +86,7 @@ static void State_server(){
             break;
     }
 }
+
 /**
 * @brief 操作This状态机转移状态
 * 一次性操作发生在这里
@@ -159,15 +116,19 @@ static void State_go(States next_state){
         case ST_Earth:
             //填充所有数据，然后注册数据中间件轮询到时钟中心
             //onenet事件注册在这里
-            //todo：离开earth时要注销onenet
-            s_data.Pollall();
+            //如果将来会离开earth。请记得要注销onenet
             memset(&This.su,0,sizeof(This.su));
+
+            s_data.Pollall();
             if(This.config.dev_count <=2) {
                 tictok.Add(s_data.Poll, 1000, false);
             }else{
                 tictok.Add(s_data.Poll,300,false);
             }
-            onenet_update(0);
+
+            This.onenet_poll_tictok_ID=tictok.Add(onenet.Poll,10000,false);
+            onenet.Pollall();
+
             This.state=ST_Earth;
             LCD_clearLineAll();
             break;

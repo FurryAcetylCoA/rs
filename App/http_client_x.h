@@ -35,8 +35,8 @@
  *
  */
 
-#ifndef LWIP_HDR_APPS_HTTP_CLIENT_H
-#define LWIP_HDR_APPS_HTTP_CLIENT_H
+#ifndef LWIP_HDR_APPS_HTTP_CLIENT_H_X
+#define LWIP_HDR_APPS_HTTP_CLIENT_H_X
 
 #include "lwip/opt.h"
 #include "lwip/ip_addr.h"

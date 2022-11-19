@@ -4,13 +4,15 @@
 
 #ifndef RS_DATASTRUCT_H
 #define RS_DATASTRUCT_H
+
 #include "stm32f4xx_hal.h"
+#include "http_client_x.h"
 
 /////////////////////////////////
 //       CONST    DEFINE       //
 /////////////////////////////////
 
-#define MAX_DEV_COUNT 10
+#define MAX_DEV_COUNT 5
 
 
 /////////////////////////////////
@@ -112,15 +114,22 @@ typedef struct{
     uint8_t data2_unit[6];
     uint8_t name[32];
     uint8_t data1_display_name[32];
-    uint8_t data2_display_name[32];
+    uint8_t data2_display_name[32]; //这俩可以是中文
+    uint8_t data1_name[32];
+    uint8_t data2_name[32];  //这俩是用于发给onenet的，那边只认utf8，转码实现不出来
 }Dev_desc;
+
+typedef struct {
+    httpc_connection_t httpc_settings;
+    _Bool  sending;
+}Dev_onenet_desc;
 
 typedef struct{
     Sens_dev_desc   sens_desc;
     float  data1;
     float  data2;
     sens_ErrCode  errCode;
-   // uint8_t  name[32];
+    Dev_onenet_desc onenetDesc;
 }App_dev_desc; // 应用级传感器描述符
 
 typedef struct {
@@ -156,7 +165,8 @@ typedef struct{
     struct{    //这么包一下仅仅是为了好区分
         States state;
         Key_data keys;
-        uint32_t check_dhcp_callback_tictok_ID; //目前只有这个任务会需要结束自己
+        uint32_t check_dhcp_callback_tictok_ID; //这个任务需要结束自己
+        uint32_t onenet_poll_tictok_ID;         //离开earth会用到
 
     };
     struct{

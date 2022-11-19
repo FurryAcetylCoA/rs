@@ -39,7 +39,7 @@
  * @ingroup apps
  */
 
-#include "http_client.h"
+#include "http_client_x.h"
 
 #include "lwip/altcp_tcp.h"
 #include "lwip/dns.h"
@@ -47,6 +47,8 @@
 #include "lwip/mem.h"
 #include "lwip/altcp_tls.h"
 #include "lwip/init.h"
+
+#include "App_Config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,7 +109,7 @@
     "Accept: */*\r\n" \
     "Content-Length: %d\r\n" \
     "Connection: Close\r\n" /* we don't support persistent connections */ \
-    "api-key: u9V3xUJUU6OqGUAFRDi5388n2Cs=\r\n"  \
+    "api-key: " APP_ONENET_API_KEY "\r\n"  \
     "\r\n" \
     "%s"
 
@@ -119,7 +121,7 @@
     "Accept: */*\r\n" \
     "Host: %s\r\n" /* server name */ \
     "Content-Length: %d\r\n"\
-    "api-key: u9V3xUJUU6OqGUAFRDi5388n2Cs=\r\n"                \
+    "api-key: " APP_ONENET_API_KEY "\r\n"  \
     "Connection: Close\r\n" /* we don't support persistent connectionsb*/ \
     "\r\n" \
 		"%s"

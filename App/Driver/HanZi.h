@@ -5,6 +5,7 @@
 #ifndef RS_HANZI_H
 #define RS_HANZI_H
 #include "main.h"
+#include "datastruct.h"
 #include "w25q128.h"
 #include "alientek.h"
 

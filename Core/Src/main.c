@@ -24,9 +24,6 @@
 #include "lwip.h"
 #include "stm32f4xx_it.h"
 #include "stdbool.h"
-//#include "tcp_echo.h"
-//#include "tcp_client.h"
-#include "http_client.h"
 #include "App.h"
 #include "lcd_gxct.h"
 #include "stdio.h"
@@ -47,6 +44,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 #define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
@@ -90,18 +88,6 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static void httpc_result_fn_impl(void *arg, httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err){
-	LWIP_UNUSED_ARG(arg);
-	LWIP_UNUSED_ARG(httpc_result);
-	LWIP_UNUSED_ARG(rx_content_len);
-	LWIP_UNUSED_ARG(srv_res);
-	LWIP_UNUSED_ARG(err);
-	printf("httpc_result_fn_impl \n");
-}
-
-
-
-
 int fputc(int ch,FILE *f)
 {
     UNUSED(f);
@@ -118,13 +104,12 @@ void check_dhcp_callback(){
             LcdPrint(LINE5, "IP:%s", ip4addr_ntoa(&(dhcp->offered_ip_addr)));
             LcdPrint(LINE6, "GW:%s", ip4addr_ntoa(&(dhcp->offered_gw_addr)));
             tictok.Remove(This.check_dhcp_callback_tictok_ID);
-            HAL_Delay(1000); //尽管阻塞等待这么久不是好习惯，但系统在这个阶段还没有什么任务在执行
+            HAL_Delay(1500); //尽管阻塞等待这么久不是好习惯，但系统在这个阶段还没有什么任务在执行
             This.state_go(ST_saint_peter);
         } else if(dhcp->tries >= 4 && dhcp->tries < 7) {
             LcdPrint(LINE4, "等待 DHCP...重试: %d",dhcp->tries);
-
         }else if(dhcp->tries >= 7) {
-            This.on_error(__func__);
+            This.on_error("DHCP 获取失败");
         }
 
     }else{ //dhcp结构体没有被分配，说明interface根本没起来，这个时候应该卡在“No link”那里了
@@ -134,9 +119,15 @@ void check_dhcp_callback(){
 
 bool check_if_up(){
     MX_LWIP_Process();
-    //HAL_Delay(5);//todo:有的时候会莫名提示没有插线 //可能与https://trilium.acetylcoa.tech//share/Kqtj7E7W1HjB 有关
+    //有的时候会莫名提示没有插线 //可能与https://trilium.acetylcoa.tech//share/Kqtj7E7W1HjB 有关
+    //不对 可能没有关系
     if(! (netif_default->flags & 0x01)){ //see netif.h for details
-        return false;
+        MX_LWIP_Process();
+        HAL_Delay(15);
+        MX_LWIP_Process();
+        if(! (netif_default->flags & 0x01)){
+            return false;
+        }
     }
     return true;
 }
@@ -177,27 +168,9 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-    //tcp_echoserver_init();
+
     printf("good "__TIME__"\n");
    // EE_wipe();
-    int ret =0;
-    /*
-    httpc_connection_t httpc_settings= \
-     { HTTPC_METHOD_GET ,NULL,0 ,httpc_result_fn_impl, NULL };
-    httpc_state_t    * phttpc_state = NULL;
-    ip4_addr_t addr;
-    IP4_ADDR(&addr,192,168,3,3);
-    uint32_t InitTime= HAL_GetTick();
-    uint32_t Sent = 0;
-    uint8_t PostBuf[128];
-    httpc_settings.body_len=snprintf((char*)PostBuf,128,\
-    "{\"datastreams\": [{\"id\": \"temperature\",\"datapoints\": [{\"value\": \"27\"}]}]}");
-    httpc_settings.method = HTTPC_METHOD_POST;
-    httpc_settings.post_body=&(PostBuf);
-    */  //httpc
-
-    uint32_t Sent = 0;
-    uint32_t InitTime = HAL_GetTick() ;
 
     This.init();
 
@@ -212,6 +185,7 @@ int main(void)
 #ifdef ignore_network  //为了方便调试，可以选择忽略网络存在性检查
     if (1){
 #else
+    HAL_GPIO_WritePin(ETH_RESET_GPIO_Port,ETH_RESET_Pin,GPIO_PIN_SET);
     if(check_if_up()){
 #endif
         LcdPrint(LINE3,"检查网线情况... 成功");
@@ -240,24 +214,15 @@ int main(void)
   while (1)
   {
 		MX_LWIP_Process();
-		//目前选择的dhcp失败标记：4秒后state仍为0x06或
-		//正统方法：tries大于6
-		if(HAL_GetTick()-InitTime>8000 && Sent ==0){
-			//httpc_request_file(&addr,80,"/file.php",&httpc_settings,NULL,phttpc_state,&phttpc_state);
-			Sent=1;
-		}
-        if(t10ms == 1){
-            t10ms = 0;
-        }
+
         if(t100ms == 1){
             t100ms = 0;
-            //为了增强异步性，部分定时任务被移到时钟中心了
+            //为了增强异步性，大部分定时任务被移到时钟中心了
             This.keys = key_reader();
             key_services();
-
         }
+
         tictok.tock();
-		
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -515,7 +480,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(RS485_RE_GPIO_Port, RS485_RE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(ETH_RESET_GPIO_Port, ETH_RESET_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ETH_RESET_GPIO_Port, ETH_RESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : KEY2_Pin KEY1_Pin KEY0_Pin */
   GPIO_InitStruct.Pin = KEY2_Pin|KEY1_Pin|KEY0_Pin;
@@ -655,3 +620,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+#pragma clang diagnostic pop

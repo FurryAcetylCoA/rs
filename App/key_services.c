@@ -8,7 +8,7 @@
 void static key_services_golden_key();
 void static key_services_silver_key();
 void static key_services_empyrean();
-
+void static key_services_earth();
 /* 按键排列
  * ┌────┐
  * │RST │
@@ -33,6 +33,11 @@ void key_services(){
         case ST_Empyrean:
             key_services_empyrean();
             break;
+        case ST_Earth:
+            key_services_earth();
+            break;
+        default:
+            break;
     }
 
 }
@@ -46,7 +51,7 @@ void static key_services_silver_key(){
     if(This.keys.key2 != 0){
         This.state_go(ST_Golden_Key);
     }else if(This.keys.key0 != 0){
-        This.config.dev_count = 0;
+        This.config.dev_count = 0; //删除所有设备也仅仅是清空了ID
         EE_Store(&This);
         HAL_NVIC_SystemReset();
     }
@@ -109,4 +114,16 @@ void static key_services_empyrean(){
         }
     }
 
+}
+
+void static key_services_earth(){//todo:这个没测试过
+    if (This.keys.key2 == 1){ //up
+        if (This.su.EA.current_top >0){
+            This.su.EA.current_top--;
+        }
+    }else if (This.keys.key0 == 1){//down
+        if (This.su.EA.current_top < This.config.dev_count -1){
+            This.su.EA.current_top++;
+        }
+    }
 }

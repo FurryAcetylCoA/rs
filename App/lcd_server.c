@@ -5,7 +5,6 @@
 #include "lcd_server.h"
 #include "lcd_gxct.h"
 #include "stdio.h"
-#include "data.h"
 
 #define LcdPrint(_LINE_,...) do{sprintf((char*)lcd_buffer,__VA_ARGS__); \
                   LCD_ShowStringLineEx(_LINE_,lcd_buffer);}while(0)
@@ -21,7 +20,6 @@ void lcd_server(){
             //does nothing
             break;
         case ST_saint_peter:
-            //does nothing
             LCD_clearLine(LINE1);
             LCD_clearLine(LINE2);
             LCD_clearLine(LINE3);
@@ -38,7 +36,7 @@ void lcd_server(){
 
             LCD_ShowStringLineEx(LINE6,"按 UP 增加设备");
             LCD_ShowStringLineEx(LINE7,"按 DOWN 删除所有设备");
-            LCD_ShowStringLineEx(LINE8,"按 其他键 继续读取");
+            LCD_ShowStringLineEx(LINE8,"按 左/右键 继续读取");
             break;
         case ST_Earth:
             lcd_server_earth();
@@ -98,7 +96,7 @@ static void lcd_server_empyrean(){
         if (This.su.ES.es_programing_step < 2){ return; }
         LcdPrint(LINE4,"读数测试");
         App_dev_desc   *ndev = &This.devs[This.config.dev_count];//这种情况下，devcount已经被加过了
-        Dev_desc const *ddev = &devDesc[ndev->sens_desc.name_index];
+        const Dev_desc *ddev = &devDesc[ndev->sens_desc.name_index];
         if(ndev->errCode == sens_success) {
             if (ndev->sens_desc.data2.exist == 0) {
                 LcdPrint(LINE5, "%s:%.1f%s     ", ddev->data1_display_name, ndev->data1, ddev->data1_unit);
@@ -158,10 +156,10 @@ static void lcd_server_earth(){
             }
         }else{
             LcdPrint(i*2+1,"传感器错误或离线! ");
-        }//todo:用那个print
+        }
         i++;
     }
-    if(This.config.dev_count > 8){
+    if(This.config.dev_count > 8){ //todo:还是这个数吗
         LcdPrint(LINE9,"UP/DOWN:roll");
     }
 

@@ -13,7 +13,7 @@ void rs485_send(const uint8_t txbuf[],uint8_t rxbuf[],uint32_t txsize, uint32_t 
     uint32_t  delta = HAL_GetTick() - rs485_cold_down;
     if(delta < 10){
         HAL_Delay(10 - delta + 1);
-    }//todo: 这玩意要在硬件上才能解决
+    }
 
     HAL_GPIO_WritePin(RS485_RE_GPIO_Port,RS485_RE_Pin,GPIO_PIN_SET);
     ret=HAL_UART_Transmit(&huart1, txbuf, txsize, 0xff);

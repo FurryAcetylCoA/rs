@@ -43,8 +43,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-static uint32_t  t10msCounter,t100msCounter;
-uint32_t  t10ms,t100ms;
+static uint32_t  t100msCounter;
+uint32_t  t100ms;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -194,11 +194,6 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 1 */
   tictok.tick();
 
-  t10msCounter++;
-  if(t10msCounter>=10){
-      t10msCounter=0;
-      t10ms=1;
-  }
   t100msCounter++;
   if(t100msCounter>=100){
       t100msCounter=0;

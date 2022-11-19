@@ -2,7 +2,7 @@
 #define __EEPROM_H__
 
 #include "main.h"
-
+#include "datastruct.h"
 
 
 

@@ -5,6 +5,7 @@
 #ifndef RS_KEY_H
 #define RS_KEY_H
 #include "main.h"
+#include "datastruct.h"
 
 Key_data key_reader();
 #endif //RS_KEY_H
