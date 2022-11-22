@@ -94,6 +94,7 @@ void static key_services_empyrean(){
                 This.su.ES.es_programing_step = 0;
             }else if(This.keys.key1 == 1){// back
                 This.su.ES.es_state = ES_Devname;
+                LCD_clearLineAll();
             }else if(This.keys.key3 == 1){ // OK
                 This.config.dev_count += 1;
                 This.su.ES.es_state = ES_Yet_Another;
