@@ -178,6 +178,7 @@ int main(void)
 
     LCD_ShowStringLineEx(LINE1,"中文CN中文CN");
     LcdPrint(LINE2,"初始化 lwip...");
+    HAL_GPIO_WritePin(ETH_RESET_GPIO_Port,ETH_RESET_Pin,GPIO_PIN_SET); //解除PHY复位
     MX_LWIP_Init(); //我关掉cube自动生成对该函数的调用了。因为它太耗时间。我打算先让LCD准备好
     MX_LWIP_Process();
     LcdPrint(LINE2,"初始化 lwip... 成功");
@@ -185,7 +186,7 @@ int main(void)
 #ifdef ignore_network  //为了方便调试，可以选择忽略网络存在性检查
     if (1){
 #else
-    HAL_GPIO_WritePin(ETH_RESET_GPIO_Port,ETH_RESET_Pin,GPIO_PIN_SET);
+
     if(check_if_up()){
 #endif
         LcdPrint(LINE3,"检查网线情况... 成功");
