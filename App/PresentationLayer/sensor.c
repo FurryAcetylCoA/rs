@@ -22,6 +22,7 @@ sens_ErrCode sens_SetAddr(Sens_dev_desc *dev,uint8_t addr){
 
     if (dev->inst_sized){
         sens_buffer.withLen.dataLo = addr;
+        sens_buffer.withLen.dataLen = 4;
         fill_crc16(&sens_buffer,1);
     }else{
         sens_buffer.withNoLen.dataLo = addr;
