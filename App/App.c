@@ -28,9 +28,13 @@ const Dev_desc devDesc[]={                  //为了方便字库的操作。用双引号代替°
         .data1_display_name="土壤电导率",.data1_name="",
         .data1_unit="mS/cm",.data1.factor=100,.data1.is_signed=1,.data1.mult_or_div=1},
 
-        {.name="PH"               ,.inst_sized=1,.data2.exist=0,
+        {.name="PH"            ,.inst_sized=1,.data2.exist=0,
         .data1_display_name="PH值" ,.data1_name="",
-        .data1_unit="pH",.data1.factor=100,.data1.is_signed=0,.data1.mult_or_div=1 }
+        .data1_unit="pH",.data1.factor=100,.data1.is_signed=0,.data1.mult_or_div=1 },
+
+        {.name="Illuminance" ,.inst_sized=0,.data2.exist=0,
+         .data1_display_name="光强",.data1_name="",
+         .data1_unit="Lux",.data1.factor=10,.data1.is_signed=0,.data1.mult_or_div=0}
 
 };//请只在最后添加新传感器。否则会影响已有传感器
 
