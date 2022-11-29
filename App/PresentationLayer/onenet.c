@@ -52,7 +52,7 @@ void onenet_update(uint8_t n){
     IP4_ADDR(&addr,192,168,17,5);*/
     uint8_t Postbuf[1024];
     App_dev_desc   *ndev = &This.devs[n];
-    Dev_desc const *ddev = &devDesc[n];
+    Dev_desc const *ddev = &devDesc[ndev->sens_desc.name_index];
     if(ndev->sens_desc.data2.exist){
         This.devs[n].onenetDesc.httpc_settings.body_len = \
                snprintf((char *) Postbuf, lenof(Postbuf), \
