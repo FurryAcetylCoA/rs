@@ -155,7 +155,7 @@ static void lcd_server_earth(){
                                              ddev->data2_display_name, ndev->data2, ddev->data2_unit);
             }
         }else{
-            LcdPrint(i*2+1,"传感器错误或离线! ");
+            LcdPrint(i*2+1,"传感器错误或离线!        ");
         }
         i++;
     }
