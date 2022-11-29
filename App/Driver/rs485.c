@@ -21,7 +21,7 @@ void rs485_send(const uint8_t txbuf[],uint8_t rxbuf[],uint32_t txsize, uint32_t 
     if(ret != HAL_OK){
         _TRAP;
     }
-    uint8_t rxbuf_tmp[16];//检错不发生在这层
+    uint8_t rxbuf_tmp[32];//检错不发生在这层
     HAL_UART_Receive(&huart1,rxbuf_tmp,rxsize+1,0x1f);
     //接收不能用非阻塞，因为很难界定到底收完了没有
     if(rxbuf != NULL){

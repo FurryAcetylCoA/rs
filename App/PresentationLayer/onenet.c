@@ -66,7 +66,8 @@ void onenet_update(uint8_t n){
     }
 
     This.devs[n].onenetDesc.httpc_settings.post_body =  &(Postbuf);
-    httpc_request_file_dns("api.heclouds.com",80,"/devices/"APP_ONENET_DEVICE_ID"/datapoints",&This.devs[n].onenetDesc.httpc_settings,NULL,&This.devs[n].onenetDesc,&phttpc_state);
+    httpc_post_file_dns("api.heclouds.com", 80, "/devices/"APP_ONENET_DEVICE_ID"/datapoints",
+                        &This.devs[n].onenetDesc.httpc_settings, NULL, &This.devs[n].onenetDesc, &phttpc_state);
 }
 
 void httpc_result_fn_impl_onenet(void *arg, httpc_result_t httpc_result, u32_t rx_content_len, u32_t srv_res, err_t err){

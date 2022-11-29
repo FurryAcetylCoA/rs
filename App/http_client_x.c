@@ -612,7 +612,7 @@ httpc_init_connection_addr(httpc_state_t **connection, const httpc_connection_t 
 
 /**
  * @ingroup httpc 
- * HTTP client API: request a file by passing server IP address
+ * HTTP client API: post a file by passing server IP address
  *
  * @param server_addr IP address of the server to connect
  * @param port tcp port of the server
@@ -625,8 +625,8 @@ httpc_init_connection_addr(httpc_state_t **connection, const httpc_connection_t 
  *         or an error code
  */
 err_t
-httpc_request_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
-               altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection)
+httpc_post_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
+                altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection)
 {
   err_t err;
   httpc_state_t* req;
@@ -653,7 +653,7 @@ httpc_request_file(const ip_addr_t* server_addr, u16_t port, const char* uri, co
 
 /**
  * @ingroup httpc 
- * HTTP client API: request a file by passing server name as string (DNS name or IP address string)
+ * HTTP client API: post a file by passing server name as string (DNS name or IP address string)
  *
  * @param server_name server name as string (DNS name or IP address string)
  * @param port tcp port of the server
@@ -666,8 +666,8 @@ httpc_request_file(const ip_addr_t* server_addr, u16_t port, const char* uri, co
  *         or an error code
  */
 err_t
-httpc_request_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
-                   altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection)
+httpc_post_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
+                    altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection)
 {
   err_t err;
   httpc_state_t* req;

@@ -170,10 +170,10 @@ typedef struct _httpc_state
 #endif
 } httpc_state_t;
 
-err_t httpc_request_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
-                     altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection);
-err_t httpc_request_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
-                     altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection);
+err_t httpc_post_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const httpc_connection_t *settings,
+                      altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection);
+err_t httpc_post_file_dns(const char* server_name, u16_t port, const char* uri, const httpc_connection_t *settings,
+                          altcp_recv_fn recv_fn, void* callback_arg, httpc_state_t **connection);
 
 
 

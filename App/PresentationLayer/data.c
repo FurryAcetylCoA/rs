@@ -33,7 +33,6 @@ static void sdata_PollOne(uint8_t num){
 /**
 * @brief 根据当前轮询id号
 *
-*
 * @retval None.
 */
 static void sdata_Poll_Pub(){
